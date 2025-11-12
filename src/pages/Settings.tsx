@@ -1,17 +1,23 @@
-import { useState, useEffect } from "react"
+import { Modal } from "@/base"
+import { ThemeToggle } from "@/components"
 import { useLocationContext } from "@/context"
 import { useInstallPrompt } from "@/hooks"
-import { ThemeToggle } from "@/components"
-import { Modal } from "@/base"
+import { useState, useEffect } from "react"
 
 export const Settings = () => {
     const { installAvailable, promptInstall } = useInstallPrompt()
-    const { permissionGranted, grantPermission, revokePermission, location, fetching } = useLocationContext()
+    const {
+        permissionGranted,
+        requestLocationPermission,
+        revokePermission,
+        location,
+        fetching,
+    } = useLocationContext()
+
     const [isInstalled, setIsInstalled] = useState(false)
     const [showModal, setShowModal] = useState(false)
 
     useEffect(() => {
-        // Check if PWA is installed (standalone mode)
         const checkInstalled = () => {
             setIsInstalled(window.matchMedia("(display-mode: standalone)").matches)
         }
@@ -55,7 +61,7 @@ export const Settings = () => {
                         </div>
                     </div>
 
-                    {/* 📍 Location Permission */}
+                    {/* 📍 Location Access */}
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-3 sm:p-4 transition-colors">
                         <div className="flex items-center mb-2 sm:mb-3">
                             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
@@ -73,6 +79,7 @@ export const Settings = () => {
                             {permissionGranted ? (
                                 <button
                                     onClick={revokePermission}
+                                    disabled={fetching}
                                     className="w-full sm:w-64 bg-red-500 hover:bg-red-600 text-white py-2 sm:py-2.5 rounded-xl font-semibold shadow-md hover:scale-105 transition-all"
                                 >
                                     🔒 Revoke Access
@@ -91,7 +98,7 @@ export const Settings = () => {
                             )}
                         </div>
 
-                        {/* Current Location Display */}
+                        {/* Current Location */}
                         {permissionGranted && location && (
                             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-3 text-center">
                                 Current:{" "}
@@ -100,7 +107,7 @@ export const Settings = () => {
                             </p>
                         )}
 
-                        {/* Permission Confirmation Modal */}
+                        {/* Permission Modal */}
                         {showModal && (
                             <Modal
                                 show={showModal}
@@ -110,7 +117,7 @@ export const Settings = () => {
                                 confirmText="Allow"
                                 cancelText="Cancel"
                                 onConfirm={() => {
-                                    grantPermission()
+                                    requestLocationPermission()
                                     setShowModal(false)
                                 }}
                                 onCancel={() => setShowModal(false)}
@@ -143,8 +150,8 @@ export const Settings = () => {
                                 <button
                                     onClick={promptInstall}
                                     className="w-full sm:w-64 bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700
-                                                text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl font-semibold transition-all duration-200
-                                                hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl text-sm sm:text-base"
+                    text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl font-semibold transition-all duration-200
+                    hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl text-sm sm:text-base"
                                 >
                                     📲 Install Now
                                 </button>
@@ -159,7 +166,7 @@ export const Settings = () => {
                         </div>
                     </div>
 
-                    {/* ℹ️ App Information */}
+                    {/* ℹ️ App Info */}
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-3 sm:p-4 transition-colors">
                         <div className="flex items-center mb-2 sm:mb-3">
                             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
@@ -188,4 +195,3 @@ export const Settings = () => {
         </div>
     )
 }
-
