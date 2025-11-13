@@ -30,16 +30,26 @@ jobs:
         continue-on-error: true
         run: |
           echo "Running yarn audit..."
-          yarn audit --level moderate --json > audit-results.json || echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
           
-          # Check if vulnerabilities were found
-          if [ -s audit-results.json ]; then
+          # Run audit and capture exit code
+          if yarn audit --level moderate --json > audit-results.json; then
+            echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
+            echo "No vulnerabilities found!"
+          else
+            # Audit failed, meaning vulnerabilities were found
+            echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
+            
+            # Generate human-readable summary
             echo "## Security Audit Results" > audit-summary.md
             echo "" >> audit-summary.md
-            yarn audit --level moderate >> audit-summary.md || true
-            echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
-          else
-            echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
+            echo "**Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> audit-summary.md
+            echo "" >> audit-summary.md
+            yarn audit --level moderate >> audit-summary.md 2>&1 || true
+            
+            # Also extract summary from JSON
+            echo "" >> audit-summary.md
+            echo "### Summary" >> audit-summary.md
+            cat audit-results.json | grep -o '"vulnerabilities":{[^}]*}' >> audit-summary.md || true
           fi
       
       - name: Upload audit results
