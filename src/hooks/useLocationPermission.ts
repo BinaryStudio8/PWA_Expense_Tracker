@@ -1,56 +1,56 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export const useLocationPermission = () => {
-    const [permissionGranted, setPermissionGranted] = useState<boolean>(
+    const [permissionGranted, setPermissionGranted] = useState(
         localStorage.getItem("locationPermission") === "true"
     )
 
     const [fetching, setFetching] = useState(false)
-    const [location, setLocation] = useState<{
-        latitude: number
-        longitude: number
-        address?: string
-    } | null>(() => {
+    const [location, setLocation] = useState(() => {
         const stored = localStorage.getItem("userLocation")
         return stored ? JSON.parse(stored) : null
     })
 
-    const requestLocationPermission = async () => {
-        if (!navigator.geolocation) {
-            alert("Geolocation is not supported on this device.")
-            return
-        }
+    const fetchLocation = () => {
+        if (!navigator.geolocation) return
 
         setFetching(true)
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 const { latitude, longitude } = pos.coords
-                let address: string | undefined
 
+                let address
                 try {
-                    const response = await fetch(
+                    const res = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
                     )
-                    const data = await response.json()
+                    const data = await res.json()
                     address = data.display_name
-                } catch {
-                    address = undefined
-                }
+                } catch { /* empty */ }
 
                 const loc = { latitude, longitude, address }
                 setLocation(loc)
-                setPermissionGranted(true)
-                localStorage.setItem("locationPermission", "true")
                 localStorage.setItem("userLocation", JSON.stringify(loc))
                 setFetching(false)
             },
-            (err) => {
-                console.warn("❌ Location access denied or failed:", err)
-                setFetching(false)
+            () => setFetching(false),
+            { enableHighAccuracy: true, timeout: 7000 }
+        )
+    }
+
+    const requestLocationPermission = () => {
+        if (!navigator.geolocation) return
+
+        navigator.geolocation.getCurrentPosition(
+            () => {
+                setPermissionGranted(true)
+                localStorage.setItem("locationPermission", "true")
+                fetchLocation()
+            },
+            () => {
                 setPermissionGranted(false)
                 localStorage.setItem("locationPermission", "false")
-            },
-            { enableHighAccuracy: true, timeout: 7000 }
+            }
         )
     }
 
@@ -61,10 +61,15 @@ export const useLocationPermission = () => {
         setLocation(null)
     }
 
+    useEffect(() => {
+        if (permissionGranted) fetchLocation()
+    }, [permissionGranted])
+
     return {
         permissionGranted,
         requestLocationPermission,
         revokePermission,
+        fetchLocation,
         fetching,
         location,
     }
