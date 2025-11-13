@@ -1,0 +1,92 @@
+name: Branch Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly cleanup on Sundays at midnight
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Delete Merged & Stale Branches
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Delete merged Dependabot branches
+        run: |
+          echo "🧹 Cleaning up merged branches..."
+          
+          # Fetch all branches and prune deleted remote branches
+          git fetch --all --prune
+          
+          # Get all merged dependabot branches
+          merged_branches=$(git branch -r --merged origin/main | grep 'dependabot/' | sed 's|origin/||' || echo "")
+          
+          if [ -z "$merged_branches" ]; then
+            echo "No merged Dependabot branches found."
+          else
+            echo "Found merged branches:"
+            echo "$merged_branches"
+            
+            # Delete each merged branch
+            echo "$merged_branches" | while read -r branch; do
+              if [ -n "$branch" ]; then
+                echo "Deleting merged branch: $branch"
+                git push origin --delete "$branch" 2>/dev/null || echo "Branch $branch already deleted or not found"
+              fi
+            done
+          fi
+          
+          echo "✅ Merged branches cleanup complete!"
+
+      - name: Delete stale Dependabot branches (older than 30 days)
+        run: |
+          echo "🧹 Cleaning up stale branches..."
+          
+          # Get current timestamp
+          now=$(date +%s)
+          thirty_days_ago=$((now - 2592000))
+          
+          # Get all dependabot branches
+          for branch in $(git branch -r | grep 'dependabot/' | sed 's/origin\///'); do
+            # Get last commit timestamp
+            last_commit=$(git log -1 --format=%ct "origin/$branch" 2>/dev/null || echo 0)
+            
+            # Skip if we couldn't get the timestamp
+            if [ "$last_commit" = "0" ]; then
+              continue
+            fi
+            
+            # Delete if older than 30 days
+            if [ "$last_commit" -lt "$thirty_days_ago" ]; then
+              # Calculate days old (for logging)
+              days_old=$(( (now - last_commit) / 86400 ))
+              echo "Deleting stale branch: $branch (${days_old} days old)"
+              git push origin --delete "$branch" || true
+            fi
+          done
+          
+          echo "✅ Stale branches cleanup complete!"
+
+      - name: Summary
+        run: |
+          echo "## Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Merged Dependabot branches: Deleted" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Stale branches (>30 days): Deleted" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Remaining branches:" >> $GITHUB_STEP_SUMMARY
+          git branch -r | grep 'dependabot/' | sed 's|origin/||' >> $GITHUB_STEP_SUMMARY || echo "None" >> $GITHUB_STEP_SUMMARY

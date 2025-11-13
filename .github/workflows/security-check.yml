@@ -1,4 +1,3 @@
-# .github/workflows/security-check.yml
 name: Daily Security Check
 
 on:
@@ -8,27 +7,93 @@ on:
 
 jobs:
   audit:
+    name: Security Audit
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'yarn'
       
-      - name: Check for vulnerabilities
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Run security audit
+        id: audit
+        continue-on-error: true
         run: |
-          yarn audit --level moderate || true
+          echo "Running yarn audit..."
+          yarn audit --level moderate --json > audit-results.json || echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
           
+          # Check if vulnerabilities were found
+          if [ -s audit-results.json ]; then
+            echo "## Security Audit Results" > audit-summary.md
+            echo "" >> audit-summary.md
+            yarn audit --level moderate >> audit-summary.md || true
+            echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Upload audit results
+        if: steps.audit.outputs.vulnerabilities_found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-results
+          path: |
+            audit-results.json
+            audit-summary.md
+          retention-days: 30
+      
       - name: Create issue if vulnerabilities found
-        if: failure()
+        if: steps.audit.outputs.vulnerabilities_found == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.create({
+            const fs = require('fs');
+            const summary = fs.readFileSync('audit-summary.md', 'utf8');
+            
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: '🚨 Security vulnerabilities detected',
-              body: 'Run `yarn audit` to see details.',
-              labels: ['security', 'dependencies']
-            })
+              state: 'open',
+              labels: 'security,dependencies',
+              per_page: 100
+            });
+            
+            const existingIssue = issues.data.find(issue => 
+              issue.title.includes('Security vulnerabilities detected')
+            );
+            
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `## New vulnerabilities detected on ${new Date().toISOString().split('T')[0]}\n\n${summary}\n\n---\n[View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})`
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 Security vulnerabilities detected',
+                body: `${summary}\n\n---\n**Action Required:** Run \`yarn audit fix\` to resolve vulnerabilities.\n\n[View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
+                labels: ['security', 'dependencies', 'urgent']
+              });
+            }
+      
+      - name: Fail workflow if critical vulnerabilities found
+        if: steps.audit.outputs.vulnerabilities_found == 'true'
+        run: |
+          echo "::error::Security vulnerabilities detected! Check the created issue for details."
+          exit 1
