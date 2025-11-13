@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --cache --cache-location .eslintcache",
     "preview": "vite preview",
     "cap:copy": "npx cap copy",
     "cap:sync": "npx cap sync",
