@@ -26,7 +26,8 @@
       "@pages/*": ["pages/*"],
       "@props/*": ["props/*"],
       "@providers/*": ["providers/*"],
-      "@types/*": ["types/*"]
+      "@types/*": ["types/*"],
+      "@plugins/*": ["../plugins/*"]
     }
   },
   "include": ["src"]

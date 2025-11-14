@@ -2,9 +2,13 @@ import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import path from "path"
+import pkg from "./package.json"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -24,6 +28,7 @@ export default defineConfig({
       "@props": path.resolve(__dirname, "./src/props"),
       "@providers": path.resolve(__dirname, "./src/providers"),
       "@types": path.resolve(__dirname, "./src/types"),
+      "@plugins": path.resolve(__dirname, "plugins"),
     },
   },
 

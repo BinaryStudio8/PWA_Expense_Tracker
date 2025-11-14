@@ -2331,6 +2331,11 @@ caniuse-lite@^1.0.30001754:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001754.tgz#7758299d9a72cce4e6b038788a15b12b44002759"
   integrity sha512-x6OeBXueoAceOmotzx3PO4Zpt4rzpeIFsSr6AAePTZxSkXiYDUmpypEl7e2+8NCd9bD7bXjqyef8CJYPC1jfxg==
 
+capacitor-sms-reader@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/capacitor-sms-reader/-/capacitor-sms-reader-0.0.1.tgz#a4f5055451503b02c6fb066992f41b7c3109b391"
+  integrity sha512-E8Ti8DCGTrV+L8dB+l0VADEMO3vh+7EaRJWhzNIY9U7a9rBBVSVXmGuCwEeivL0aBQY8+AFd8gwpL+Cx2Auq6g==
+
 chalk@^4.0.0:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.2.tgz#aac4e2b7734a740867aeb16bf02aad556a1e7a01"

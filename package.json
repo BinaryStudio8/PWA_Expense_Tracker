@@ -1,7 +1,7 @@
 {
   "name": "demo-pwa",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,6 +20,7 @@
     "@capacitor/geolocation": "^7.1.5",
     "@emotion/is-prop-valid": "^1.4.0",
     "@headlessui/react": "^2.2.9",
+    "capacitor-sms-reader": "^0.0.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.553.0",

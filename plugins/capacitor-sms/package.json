@@ -1,0 +1,11 @@
+{
+  "name": "capacitor-sms",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/definitions.d.ts",
+  "capacitor": {
+    "android": {
+      "src": "android/src/main"
+    }
+  }
+}

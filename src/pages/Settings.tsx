@@ -28,6 +28,7 @@ export const Settings = () => {
 
     const [isInstalled, setIsInstalled] = useState(false)
     const [showModal, setShowModal] = useState(false)
+    const appVersion = __APP_VERSION__
 
     useEffect(() => {
         const checkInstalled = () => {
@@ -201,7 +202,7 @@ export const Settings = () => {
                                     Version
                                 </span>
                                 <span className="font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-600 px-2 sm:px-3 py-1 rounded-lg text-sm sm:text-base">
-                                    v1.0.1
+                                    v{appVersion}
                                 </span>
                             </div>
                             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">

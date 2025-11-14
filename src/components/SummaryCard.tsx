@@ -13,7 +13,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
         className={`flex flex-col items-center justify-center text-center
                     bg-linear-to-br ${gradient}
                     text-white rounded-2xl
-                    p-3 sm:p-4 shadow-xl hover:shadow-2xl
+                    p-1.5 shadow-xl hover:shadow-2xl
                     transition-transform duration-300 hover:scale-[1.04] active:scale-[0.97]
                     ${onClick ? "cursor-pointer" : ""}`}
     >

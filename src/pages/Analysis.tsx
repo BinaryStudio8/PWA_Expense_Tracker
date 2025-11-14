@@ -44,8 +44,8 @@ export const Analysis: React.FC = () => {
         () =>
             stats.dailyTotals.length
                 ? stats.dailyTotals.reduce((max, day) =>
-                      day.amount > max.amount ? day : max
-                  )
+                    day.amount > max.amount ? day : max
+                )
                 : null,
         [stats.dailyTotals]
     )
@@ -53,8 +53,8 @@ export const Analysis: React.FC = () => {
         () =>
             stats.categoryData.length
                 ? stats.categoryData.reduce((max, cat) =>
-                      cat.value > max.value ? cat : max
-                  )
+                    cat.value > max.value ? cat : max
+                )
                 : null,
         [stats.categoryData]
     )
@@ -216,21 +216,24 @@ export const Analysis: React.FC = () => {
         )
     }
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8 relative">
-            {/* Header */}
-            <div className="space-y-4 sm:space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
-                    📊 Spending Analysis
-                </h1>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium max-w-2xl mt-3">
-                    Track how and where your money goes — visualize patterns and manage your spending smarter.
-                </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-10">
+            {/* ---------------- HEADER ---------------- */}
+            <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                    {/* Title + Subtitle */}
+                    <div className="flex items-start gap-3">
+                        <CalendarDays className="h-10 w-10 text-blue-600 dark:text-blue-400 mt-1" />
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                                Spending Analysis
+                            </h1>
+                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+                                Track where your money goes — visualize patterns and improve your decisions.
+                            </p>
+                        </div>
                     </div>
-                    <div className="
-                    flex items-center justify-between sm:justify-end gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm
-                    ">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm">
                         <button
                             onClick={() => changeMonth(-1)}
                             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition"
@@ -257,15 +260,16 @@ export const Analysis: React.FC = () => {
                 </div>
             </div>
 
-            {/* High-level metrics */}
+            {/* ---------------- HIGH LEVEL METRICS ---------------- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                 {primaryHighlights.map(({ key, ...card }) => (
                     <SummaryCard key={key} {...card} />
                 ))}
             </div>
 
-            {/* Charts Section */}
+            {/* ---------------- CHARTS ---------------- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+
                 {/* Line Chart */}
                 <ChartCard
                     title="Daily Spending Trend"
@@ -276,11 +280,7 @@ export const Analysis: React.FC = () => {
                             data={stats.dailyTotals}
                             margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
                         >
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#374151"
-                                opacity={0.1}
-                            />
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                             <XAxis
                                 dataKey="day"
                                 stroke="#6b7280"
@@ -293,8 +293,8 @@ export const Analysis: React.FC = () => {
                                 tick={{ fontSize: 10 }}
                                 axisLine={false}
                                 tickLine={false}
-                                tickFormatter={(value) =>
-                                    `₹${formatIndianNumber(value, {
+                                tickFormatter={(v) =>
+                                    `₹${formatIndianNumber(v, {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 0,
                                     })}`
@@ -305,8 +305,8 @@ export const Analysis: React.FC = () => {
                                 dataKey="amount"
                                 stroke="#3b82f6"
                                 strokeWidth={3}
-                                dot={{ r: 2.5, fill: "#3b82f6" }}
-                                activeDot={{ r: 4, fill: "#1e40af" }}
+                                dot={{ r: 2.5 }}
+                                activeDot={{ r: 4 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -315,27 +315,23 @@ export const Analysis: React.FC = () => {
                 {/* Pie Chart */}
                 <ChartCard
                     title="Category Distribution"
-                    className="bg-linear-to-br from-emerald-100 to-teal-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
-                >
+                    className="bg-linear-to-br from-emerald-100 to-teal-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
                     {stats.categoryData.length ? (
-                        <ResponsiveContainer width="100%" height={260}>
+                        <ResponsiveContainer width="100%" height={270} minHeight={350}>
                             <PieChart margin={{ top: 10, right: 20, left: 20, bottom: 5 }}>
                                 <Pie
                                     data={stats.categoryData}
                                     cx="50%"
                                     cy="50%"
+                                    outerRadius={95}
                                     labelLine={false}
                                     label={renderCustomizedLabel}
-                                    outerRadius={90}
-                                    fill="#8884d8"
                                     dataKey="value"
-                                    animationBegin={0}
-                                    animationDuration={800}
-                                >
-                                    {stats.categoryData.map((_, index) => (
+                                    animationDuration={500}>
+                                    {stats.categoryData.map((_, i) => (
                                         <Cell
-                                            key={`cell-${index}`}
-                                            fill={COLORS[index % COLORS.length]}
+                                            key={i}
+                                            fill={COLORS[i % COLORS.length]}
                                             stroke="#fff"
                                             strokeWidth={1}
                                         />
@@ -343,28 +339,26 @@ export const Analysis: React.FC = () => {
                                 </Pie>
                                 <Legend
                                     verticalAlign="bottom"
-                                    height={36}
+                                    height={30}
                                     iconType="circle"
-                                    wrapperStyle={{
-                                        fontSize: "12px",
-                                        color: "#6b7280",
-                                    }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                     ) : (
                         <div className="flex h-[220px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
-                            Categorize your expenses to see where your money goes.
+                            Categorize your expenses to see where money goes.
                         </div>
                     )}
                 </ChartCard>
             </div>
 
-            {/* Insights Section */}
+            {/* ---------------- INSIGHTS ---------------- */}
             {stats.dailyTotals.length > 0 && (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 space-y-5">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
+
+                    {/* Key Insights */}
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 space-y-5">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                             💡 Key Insights
                         </h3>
                         {insightCards.length ? (
@@ -375,31 +369,32 @@ export const Analysis: React.FC = () => {
                             </div>
                         ) : (
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Add and categorise expenses to unlock personalised insights.
+                                Add and categorize expenses to unlock insights.
                             </p>
                         )}
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 space-y-5">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200">
+
+                    {/* Category Highlights */}
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 space-y-5">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                             🍰 Category Highlights
                         </h3>
                         {topCategories.length ? (
                             <div className="space-y-4">
-                                {topCategories.map((category, index) => (
-                                    <div key={category.name} className="space-y-2">
+                                {topCategories.map((c, idx) => (
+                                    <div key={c.name} className="space-y-2">
                                         <div className="flex justify-between items-baseline text-sm">
                                             <span className="font-medium text-gray-700 dark:text-gray-300">
-                                                {index + 1}. {category.name}
+                                                {idx + 1}. {c.name}
                                             </span>
                                             <span className="text-gray-500 dark:text-gray-400">
-                                                {currencyFormatter.format(category.value)} •{" "}
-                                                {category.percent.toFixed(0)}%
+                                                {currencyFormatter.format(c.value)} • {c.percent.toFixed(0)}%
                                             </span>
                                         </div>
                                         <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-linear-to-r from-indigo-300 via-sky-300 to-emerald-300"
-                                                style={{ width: `${category.percent}%` }}
+                                                style={{ width: `${c.percent}%` }}
                                             />
                                         </div>
                                     </div>
@@ -407,57 +402,59 @@ export const Analysis: React.FC = () => {
                             </div>
                         ) : (
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Categorize your expenses to see which areas impact your wallet the most.
+                                Categorize expenses to see your spending pattern.
                             </p>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Noteworthy expenses */}
+            {/* ---------------- EXPENSE REVIEW ---------------- */}
             {focusExpenses.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-4 sm:p-6 space-y-4">
-                    <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             🔍 Expenses to Review
                         </h3>
                         <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Top {focusExpenses.length} by amount
+                            Top {focusExpenses.length}
                         </span>
                     </div>
+
                     <div className="space-y-3">
-                        {focusExpenses.map((expense) => (
+                        {focusExpenses.map((exp) => (
                             <div
-                                key={expense.id}
+                                key={exp.id}
                                 className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700 px-4 py-3"
                             >
                                 <div>
-                                    <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">
-                                        {expense.title || "Untitled expense"}
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                        {exp.title || "Untitled expense"}
                                     </p>
                                     <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-2">
                                         <span>
-                                            {new Date(expense.date).toLocaleDateString("en-IN", {
+                                            {new Date(exp.date).toLocaleDateString("en-IN", {
                                                 day: "2-digit",
                                                 month: "short",
                                                 year: "numeric",
                                             })}
                                         </span>
-                                        {expense.category && (
+                                        {exp.category && (
                                             <>
-                                                <span className="hidden sm:inline">•</span>
-                                                <span>{expense.category}</span>
+                                                <span>•</span>
+                                                <span>{exp.category}</span>
                                             </>
                                         )}
                                     </div>
-                                    {expense.description && (
+                                    {exp.description && (
                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {expense.description}
+                                            {exp.description}
                                         </p>
                                     )}
                                 </div>
+
                                 <span className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
-                                    {currencyFormatter.format(expense.amount)}
+                                    {currencyFormatter.format(exp.amount)}
                                 </span>
                             </div>
                         ))}
@@ -465,12 +462,11 @@ export const Analysis: React.FC = () => {
                 </div>
             )}
 
-            {/* Empty State */}
+            {/* ---------------- EMPTY STATE ---------------- */}
             {(!stats.dailyTotals.length || !stats.categoryData.length) && (
                 <div className="text-center py-10">
                     <p className="text-gray-500 dark:text-gray-400 text-base">
-                        No data available yet. Start adding expenses to see your
-                        analysis!
+                        No data available yet. Start adding expenses to see your analysis!
                     </p>
                 </div>
             )}
