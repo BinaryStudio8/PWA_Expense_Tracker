@@ -24,7 +24,6 @@ jobs:
   # ------------------------------------------------------------
   secret-scan:
     runs-on: ubuntu-latest
-    if: github.event_name != 'schedule'
     steps:
       - uses: actions/checkout@v4
       - name: Secret Scan
@@ -42,10 +41,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
-      - run: bun install --frozen-lockfile
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
       - name: ESLint
         run: bunx eslint . --cache --cache-location .eslintcache
         continue-on-error: true
+
       - uses: actions/cache@v4
         with:
           path: .eslintcache
@@ -60,8 +63,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
-      - run: bun install --frozen-lockfile
-      - name: Type Check
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: TypeScript Check
         run: bunx tsc --noEmit
         continue-on-error: true
 
@@ -74,16 +80,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
-      - run: bun install --frozen-lockfile
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
       - name: Build Web
         run: bun run build
+
       - uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: dist/**
+          retention-days: 7
 
   # ------------------------------------------------------------
-  # 5. Android Build (SIGNED RELEASE APK)
+  # 5. Android Build (SIGNED APK ONLY)
   # ------------------------------------------------------------
   build-android:
     runs-on: ubuntu-latest
@@ -100,7 +111,7 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
-      - name: Install Android Build Tools
+      - name: Install Android SDK Tools
         run: |
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
@@ -112,37 +123,31 @@ jobs:
           mkdir -p android/app
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
 
-      - name: Export signing secrets
-        run: |
-          echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> $GITHUB_ENV
+      - name: Install JS deps
+        run: bun install --frozen-lockfile
 
       - uses: actions/download-artifact@v4
         with:
           name: web-build
           path: dist/
 
-      # ------------------------------------------------------------
-      # USE NPM FOR CAPACITOR (REQUIRED)
-      # ------------------------------------------------------------
-      - name: Install node_modules for Capacitor CLI
-        run: npm install --no-audit --no-fund
-
-      - name: Capacitor Sync
+      - name: Capacitor Sync (Bun friendly)
         run: |
-          npx cap copy
-          npx cap sync android
+          ./node_modules/.bin/cap copy
+          ./node_modules/.bin/cap sync android
 
-      - name: Build Signed Release APK
+      - name: Make Gradle Executable
+        run: chmod +x android/gradlew
+
+      - name: Build Signed Android APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace \
+          ./gradlew assembleRelease --no-daemon --stacktrace --console=rich \
             2>&1 | tee gradle-build.log
 
       - uses: actions/upload-artifact@v4
         with:
-          name: android-logs
+          name: gradle-logs
           path: android/gradle-build.log
 
       - uses: actions/upload-artifact@v4
@@ -152,7 +157,7 @@ jobs:
           retention-days: 30
 
   # ------------------------------------------------------------
-  # 6. GitHub Release on Tag
+  # 6. Release (tags only)
   # ------------------------------------------------------------
   release:
     runs-on: ubuntu-latest
@@ -169,10 +174,8 @@ jobs:
           name: android-apk
           path: ./artifacts
 
-      - name: Show artifacts
-        run: find ./artifacts -type f -print
-
-      - uses: softprops/action-gh-release@v2
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
           files: ./artifacts/app-release.apk
           body: "Automated release for ${{ github.ref_name }}"
@@ -180,7 +183,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ------------------------------------------------------------
-  # 7. Build Summary
+  # 7. Summary
   # ------------------------------------------------------------
   summary:
     runs-on: ubuntu-latest
