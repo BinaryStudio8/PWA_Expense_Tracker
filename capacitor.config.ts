@@ -18,6 +18,10 @@ const config: CapacitorConfig = {
   loggingBehavior: "production",
 
   plugins: {
+    Geolocation: {
+      androidBackgroundLocation: true,
+    },
+
     "capacitor-notification-listener": {
       android: {
         path: "./plugins/capacitor-notification-listener/android",
