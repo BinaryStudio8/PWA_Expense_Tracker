@@ -38,7 +38,7 @@ export const Modal: React.FC<ModalProps> = ({
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
           >
             <div
-              className="w-[90%] max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 sm:p-7 
+              className="w-[90%] max-w-sm bg-white dark:bg-gray-900/95 rounded-2xl shadow-2xl p-6 sm:p-7 
                                         border border-gray-200 dark:border-gray-700"
             >
               {/* Icon + Title */}
@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
               <div className="flex justify-center gap-3 sm:gap-4">
                 <button
                   onClick={onCancel}
-                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-gray-200 dark:bg-gray-900/80 
                                                 text-gray-800 dark:text-gray-200 font-medium hover:bg-gray-300 
                                                 dark:hover:bg-gray-600 transition-all duration-200 active:scale-95"
                 >

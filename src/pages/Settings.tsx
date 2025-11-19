@@ -14,10 +14,19 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+
 import { useState, useEffect } from "react";
 
 export const Settings = () => {
-  const { installAvailable, promptInstall } = useInstallPrompt();
+  const {
+    installAvailable,
+    installed,
+    showInstallModal,
+    setShowInstallModal,
+    platform,
+    blocked,
+    triggerInstall,
+  } = useInstallPrompt();
   const {
     permissionGranted,
     requestLocationPermission,
@@ -40,175 +49,180 @@ export const Settings = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-3 sm:p-4 md:p-6 transition-all duration-300 hover:shadow-3xl">
-        {/* Header */}
-        <div className="text-center mb-3 sm:mb-4 md:mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-blue-100 dark:bg-blue-900 rounded-full mb-1 sm:mb-2">
-            <SettingsIcon className="text-blue-600 dark:text-blue-400 w-6 h-6 sm:w-8 sm:h-8" />
+    <div className="flex justify-center py-3 px-4 bg-gray-50 dark:bg-gray-900/1">
+      <div className="w-full max-w-4xl space-y-6">
+        {/* SETTINGS HEADER */}
+        <div className="mb-5">
+          {/* Title Row */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <SettingsIcon className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 dark:text-blue-400" />
+            </div>
+
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 leading-tight">
+              Settings
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-            Settings
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-            Customize your experience
+
+          {/* Subtext */}
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            Customize your app experience and manage permissions.
           </p>
+
+          {/* Divider */}
+          <hr className="border-gray-300 dark:border-gray-700" />
         </div>
 
-        <div className="space-y-4 sm:space-y-6">
-          {/* Appearance */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-3 sm:p-4 transition-colors">
-            <div className="flex items-center mb-2 sm:mb-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
-                <Moon className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+        {/* SETTINGS GRID */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* APPEARANCE CARD */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
+                <Moon className="w-5 h-5 text-blue-500" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                Appearance
-              </h3>
-            </div>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
-              Toggle between light and dark themes for a personalized look.
+              Appearance
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Switch between light and dark themes.
             </p>
-            <div className="flex justify-center">
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
           </div>
 
-          {/* 📍 Location Access */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-3 sm:p-4 transition-colors">
-            <div className="flex items-center mb-2 sm:mb-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
-                <MapPin className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+          {/* LOCATION ACCESS CARD */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              <div className="p-1 bg-yellow-100 dark:bg-yellow-900 rounded">
+                <MapPin className="w-5 h-5 text-yellow-500" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                Location Access
-              </h3>
-            </div>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
-              Manage app access to your current location.
+              Location Access
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Manage how the app uses your location.
             </p>
-
-            <div className="flex justify-center">
-              {permissionGranted ? (
-                <button
-                  onClick={revokePermission}
-                  disabled={fetching}
-                  className="w-full sm:w-64 bg-red-500 hover:bg-red-600 text-white py-2 sm:py-2.5 rounded-xl font-semibold shadow-md hover:scale-105 transition-all flex items-center justify-center gap-2"
-                >
-                  <Lock className="w-4 h-4" />
-                  Revoke Access
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowModal(true)}
-                  disabled={fetching}
-                  className={`w-full sm:w-64 py-2 sm:py-2.5 rounded-xl font-semibold text-white shadow-md transition-all flex items-center justify-center gap-2 ${
-                    fetching
-                      ? "bg-gray-400 cursor-wait"
-                      : "bg-blue-500 hover:bg-blue-600 hover:scale-105 active:scale-95"
+            {permissionGranted ? (
+              <button
+                onClick={revokePermission}
+                disabled={fetching}
+                className="w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                <Lock className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Revoke Access</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowModal(true)}
+                disabled={fetching}
+                className={`w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-white hover:scale-105 active:scale-95 ${fetching
+                    ? "bg-gray-400 cursor-not-allowed opacity-50"
+                    : "bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
                   }`}
-                >
-                  <Shield className="w-4 h-4" />
-                  {fetching ? "Requesting..." : "Grant Access"}
-                </button>
-              )}
-            </div>
-
-            {/* Current Location */}
+              >
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>{fetching ? "Requesting…" : "Grant Access"}</span>
+              </button>
+            )}
             {permissionGranted && location && (
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-3 text-center">
-                Current:{" "}
-                {location.address ||
-                  `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`}
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
+                Current: {location?.address || `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`}
               </p>
             )}
-
-            {/* Permission Modal */}
             {showModal && (
               <Modal
                 show={showModal}
                 type="info"
                 title="Allow Location Access"
-                message="This app will use your current location to tag your expenses. You can revoke this permission anytime from Settings."
+                message="The app uses your current location to tag expenses."
                 confirmText="Allow"
                 cancelText="Cancel"
                 onConfirm={() => {
                   setShowModal(false);
-                  setTimeout(() => {
-                    requestLocationPermission();
-                  }, 150);
+                  setTimeout(() => requestLocationPermission(), 150);
                 }}
                 onCancel={() => setShowModal(false)}
               />
             )}
           </div>
 
-          {/* 📱 App Installation */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-3 sm:p-4 transition-colors">
-            <div className="flex items-center mb-2 sm:mb-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
-                <Smartphone className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+          {/* APP INSTALL CARD */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              <div className="p-1 bg-green-100 dark:bg-green-900 rounded">
+                <Smartphone className="w-5 h-5 text-green-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                App Installation
-              </h3>
-            </div>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
-              Install the app for offline access and faster performance.
+              App Installation
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Install for offline access and better performance.
             </p>
-            <div className="flex justify-center">
-              {isInstalled ? (
-                <button
-                  disabled
-                  className="w-full sm:w-64 bg-linear-to-r from-green-400 to-green-500 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl font-semibold shadow-lg text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Already Installed
-                </button>
-              ) : installAvailable ? (
-                <button
-                  onClick={promptInstall}
-                  className="w-full sm:w-64 bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700
-                    text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl font-semibold transition-all duration-200
-                    hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl text-sm sm:text-base flex items-center justify-center gap-2"
-                >
-                  <DownloadCloud className="w-4 h-4" />
-                  Install Now
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="w-full sm:w-64 bg-linear-to-r from-gray-400 to-gray-500 text-gray-300 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl font-semibold shadow-lg text-sm sm:text-base cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Not Available
-                </button>
-              )}
-            </div>
+            {installed || isInstalled ? (
+              <button
+                disabled
+                className="w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-linear-to-r from-green-500 to-green-600 text-white opacity-90 cursor-not-allowed disabled:hover:scale-100"
+              >
+                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Installed</span>
+              </button>
+            ) : installAvailable ? (
+              <button
+                onClick={() => setShowInstallModal(true)}
+                className="w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white hover:scale-105 active:scale-95"
+              >
+                <DownloadCloud className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Install Now</span>
+              </button>
+            ) : (
+              <button
+                disabled
+                className="w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 bg-gray-400 text-white opacity-70 cursor-not-allowed disabled:hover:scale-100"
+              >
+                <XCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Not Available</span>
+              </button>
+            )}
+            {showInstallModal && (
+              <Modal
+                show={showInstallModal}
+                type="info"
+                title="Install App"
+                message={(() => {
+                  if (platform === "ios") {
+                    return "On iPhone/iPad, install the app by tapping the Share icon → Add to Home Screen.";
+                  }
+                  if (blocked) {
+                    return "Your browser blocked the install prompt. You can still install the app from your browser menu.";
+                  }
+                  return "Install this app for offline access and faster performance.";
+                })()}
+                confirmText={platform === "ios" || blocked ? "OK" : "Install"}
+                cancelText="Close"
+                onConfirm={
+                  platform === "ios" || blocked
+                    ? () => setShowInstallModal(false)
+                    : triggerInstall
+                }
+                onCancel={() => setShowInstallModal(false)}
+              />
+            )}
           </div>
 
-          {/* ℹ️ App Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-3 sm:p-4 transition-colors">
-            <div className="flex items-center mb-2 sm:mb-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3 sm:mr-4">
-                <Info className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+          {/* APP INFO CARD */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+            <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              <div className="p-1 bg-purple-100 dark:bg-purple-900 rounded">
+                <Info className="w-5 h-5 text-purple-500" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                App Information
-              </h3>
-            </div>
-            <div className="space-y-1 sm:space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                  Version
-                </span>
-                <span className="font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-600 px-2 sm:px-3 py-1 rounded-lg text-sm sm:text-base">
+              App Information
+            </h2>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600 dark:text-gray-400">Version</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   v{appVersion}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                Your data is stored securely with you locally. No cloud sync
-                yet.
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Your data stays on your device. No cloud sync yet.
               </p>
             </div>
           </div>

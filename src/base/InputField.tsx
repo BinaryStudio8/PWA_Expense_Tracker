@@ -29,7 +29,7 @@ export const InputField: React.FC<InputFieldProps> = ({
                             ? "border-red-400 dark:border-red-500 focus:ring-red-300"
                             : "border-gray-200 dark:border-gray-700 focus:ring-blue-400 focus:border-blue-400"
                         }
-                        bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
+                        bg-gray-50 dark:bg-gray-700/80 text-gray-900 dark:text-white
                         focus:ring-2 transition-all`}
         />
       </div>

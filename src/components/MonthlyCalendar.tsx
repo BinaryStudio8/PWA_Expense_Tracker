@@ -74,40 +74,38 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
       >
         {/* Day number */}
         <div
-          className={`text-xs sm:text-sm font-medium leading-tight ${
-            total > 0 ? "text-white" : "text-gray-900 dark:text-gray-100"
-          }`}
-        >
-          {day}
-        </div>
+          className={`text-xs sm:text-sm font-medium leading-tight ${total > 0 ? "text-black dark:text-white" : "text-gray-900 dark:text-gray-100"
+            }`}
+        > {day}
 
+        </div>
         {/* Amount below */}
         {total > 0 && (
-          <div
-            className={`text-[10px] sm:text-xs font-semibold truncate ${
-              opacity > 0.4 ? "text-white" : "text-gray-800 dark:text-gray-200"
-            }`}
-            style={{ maxWidth: "100%" }}
-          >
-            ₹
-            {formatIndianNumber(total, {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            })}
-          </div>
+            <div
+              className={`text-[10px] sm:text-xs font-semibold truncate ${opacity > 0.4 ? "text-black dark:text-white" : "text-gray-800 dark:text-gray-200"
+                }`}
+              style={{ maxWidth: "100%" }}
+            >
+              ₹
+              {formatIndianNumber(total, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+            </div>
         )}
+
       </div>,
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-4 sm:p-6">
+    <div className="bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 sm:p-6">
       {/* Week labels */}
       <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div
             key={d}
-            className="text-center text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400"
+            className="text-center text-[13px] sm:text-xs font-semibold text-gray-600 dark:text-gray-300"
           >
             {d}
           </div>

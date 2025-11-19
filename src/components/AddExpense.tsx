@@ -46,72 +46,70 @@ export const AddExpense: React.FC = () => {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
-        <InputField
-          icon={<FileText className="h-5 w-5 text-gray-500" />}
-          label="Expense Title"
-          placeholder="e.g. Coffee, Groceries, Taxi"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 hover:border-indigo-400"
-        />
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+        {/* Title and Amount Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {/* Title */}
+          <div className="space-y-2">
+            <InputField
+              icon={<FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white" />}
+              label="Expense Title"
+              placeholder="e.g. Coffee, Groceries, Taxi"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-gray-50 dark:bg-gray-900/80 border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            />
+          </div>
 
-        <InputField
-          icon={<IndianRupee className="h-5 w-5 text-gray-500" />}
-          label="Amount (₹)"
-          placeholder="Enter amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 hover:border-indigo-400"
-        />
+          {/* Amount */}
+          <div className="space-y-2">
+            <InputField
+              icon={<IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-white" />}
+              label="Amount (₹)"
+              placeholder="0.00"
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="bg-gray-50 dark:bg-gray-900/80 border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-green-500 transition-all duration-200"
+            />
+          </div>
+        </div>
 
-        {/* Category Dropdown */}
-        <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
+        {/* Category */}
+        <div className="space-y-2">
+          <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
             Category
           </label>
-
           <div className="relative">
-            <Tag className="absolute left-3 top-3 h-5 w-5 text-gray-500 pointer-events-none" />
-
+            <Tag className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-white" />
             <Listbox value={category} onChange={setCategory}>
-              <Listbox.Button className="flex items-center w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm pl-10 pr-10 py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
-                <span className="block truncate">
-                  {category || "Select category"}
-                </span>
-                <span className="absolute right-3 pointer-events-none text-gray-500 dark:text-gray-400">
-                  ▼
-                </span>
+              <Listbox.Button className="flex items-center w-full bg-gray-50 dark:bg-gray-700/80 border border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-gray-800 transition-all duration-200">
+                <span className="truncate">{category || "Select a category"}</span>
+                <span className="absolute right-3 sm:right-4 text-gray-500 dark:text-gray-400">▼</span>
               </Listbox.Button>
               <Transition
                 as={React.Fragment}
-                leave="transition ease-in duration-100"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
+                enter="transition ease-out duration-100"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
               >
-                <Listbox.Options className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl focus:outline-none">
+                <Listbox.Options className="absolute z-50 mt-2 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl sm:rounded-2xl shadow-xl max-h-60 overflow-y-auto">
                   {categories.map((cat) => (
                     <Listbox.Option
                       key={cat}
                       value={cat}
                       className={({ active, selected }) =>
-                        `cursor-pointer select-none px-4 py-3 text-sm sm:text-base transition-colors duration-150 ${
-                          active
-                            ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200"
-                            : "text-gray-800 dark:text-gray-100"
-                        } ${selected ? "font-semibold" : "font-normal"}`
+                        `rounded-sm px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base cursor-pointer transition-colors duration-150 ${active ? "bg-purple-100 dark:bg-gray-900" : ""
+                        } ${selected ? "font-semibold text-purple-600 dark:text-white" : ""}`
                       }
                     >
                       {({ selected }) => (
                         <div className="flex justify-between items-center">
-                          <span className="block truncate">{cat}</span>
-                          {selected && (
-                            <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                          )}
+                          <span className="truncate">{cat}</span>
+                          {selected && <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />}
                         </div>
                       )}
                     </Listbox.Option>
@@ -122,44 +120,45 @@ export const AddExpense: React.FC = () => {
           </div>
         </div>
 
-        <TextAreaField
-          icon={
-            <StickyNote className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-          }
-          label="Description (Optional)"
-          placeholder="Add notes like purpose, who, or where..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 hover:border-blue-400 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-        />
+        {/* Description */}
+        <div className="space-y-2">
+          <TextAreaField
+            icon={<StickyNote className="h-4 w-4 sm:h-5 sm:w-5 text-white" />}
+            label="Description (Optional)"
+            placeholder="Add any additional notes..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="bg-gray-50 dark:bg-gray-900/80 border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-orange-500 transition-all duration-200"
+          />
+        </div>
 
-        {/* 📍 Location Display */}
+        {/* Location Display */}
         {permissionGranted && location && (
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 gap-3 py-3 px-4 bg-gray-50 dark:bg-gray-800 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700">
-            <MapPin className="h-5 w-5 text-green-500 shrink-0" />
-            <span className="font-medium leading-relaxed text-base">
-              {location.address ||
-                `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
+          <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl sm:rounded-2xl text-gray-700 dark:text-gray-300">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 shrink-0" />
+            <span className="font-medium text-sm sm:text-base">
+              {location.address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
             </span>
           </div>
         )}
 
+        {/* Error */}
         {error && (
-          <div className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-sm font-medium p-4 rounded-xl text-center">
+          <div className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-sm sm:text-base p-3 sm:p-4 rounded-xl sm:rounded-2xl">
             {error}
           </div>
         )}
 
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={!title || !amount}
-          className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-3 shadow-lg transition-all duration-300 ${
-            title && amount
-              ? "bg-blue-600 hover:bg-blue-700 hover:shadow-xl active:scale-95 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800"
-              : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
-          }`}
+          className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base md:text-lg text-white flex items-center justify-center gap-2 sm:gap-3 shadow-xl active:scale-95 transition-all duration-200 ${title && amount
+              ? "bg-linear-to-r from-blue-800 to-purple-500 hover:from-blue-800 hover:to-purple-700"
+              : "bg-gray-400 dark:bg-gray-600 opacity-50 cursor-not-allowed"
+            }`}
         >
-          <PlusCircle className="h-6 w-6" />
+          <PlusCircle className="h-5 w-5 sm:h-6 sm:w-6" />
           Add Expense
         </button>
       </form>

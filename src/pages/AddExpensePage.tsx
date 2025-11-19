@@ -2,16 +2,32 @@ import { PlusCircle } from "lucide-react";
 import { AddExpense } from "@/components";
 
 export const AddExpensePage = () => (
-  <div className="sm:p-4 md:p-6 max-w-7xl mx-auto w-full bg-white/50 dark:bg-gray-800/50 rounded-t-3xl md:rounded-t-none shadow-inner">
-    {/* Header (Matched with Daily UI) */}
-    <header className="flex items-center gap-3 pb-6 border-b border-gray-200 dark:border-gray-700">
-      <PlusCircle className="h-7 w-7 text-blue-600 dark:text-blue-400" />
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-        Add New Expense
-      </h1>
-    </header>
-    <main className="mt-6 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-5 sm:p-8 space-y-6">
-      <AddExpense />
-    </main>
+  <div className=" dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 md:p-8">
+    <div className="max-w-4xl mx-auto">
+
+      {/* Title */}
+      <div className="flex items-center gap-3 mb-4">
+        <PlusCircle className="h-7 w-7 text-blue-500" />
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Add New Expense
+        </h1>
+      </div>
+
+      {/* Subtext */}
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        Track your spending effortlessly.
+      </p>
+
+      {/* Divider */}
+      <hr className="border-gray-300 dark:border-gray-700 mb-5" />
+
+
+      {/* Main Form */}
+      <main className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl shadow-2xl 
+                      p-4 sm:p-6 md:p-8 lg:p-10 border border-gray-200 dark:border-gray-700 mt-4">
+        <AddExpense />
+      </main>
+
+    </div>
   </div>
 );

@@ -79,7 +79,7 @@ export const ExpenseList = () => {
         {activeExpenses.map((e) => (
           <div
             key={e.id}
-            className="flex justify-between items-center bg-white dark:bg-gray-800
+            className="flex justify-between items-center bg-white dark:bg-gray-900/80
               border border-gray-100 dark:border-gray-700 rounded-2xl p-4
               shadow-sm hover:shadow-md transition-shadow duration-200"
           >
@@ -133,7 +133,7 @@ export const ExpenseList = () => {
             {deletedExpenses.map((e) => (
               <div
                 key={e.id}
-                className="flex justify-between items-center bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm"
+                className="flex justify-between items-center bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm"
               >
                 <span className="line-through text-gray-400 dark:text-gray-500">
                   {e.title}
