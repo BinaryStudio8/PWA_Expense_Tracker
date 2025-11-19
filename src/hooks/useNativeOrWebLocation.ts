@@ -44,7 +44,7 @@ export const useNativeOrWebLocation = () => {
             });
           },
           (err) => setError(err.message),
-          { enableHighAccuracy: true }
+          { enableHighAccuracy: true },
         );
 
         return;

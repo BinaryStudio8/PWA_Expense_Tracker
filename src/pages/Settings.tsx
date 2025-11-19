@@ -113,10 +113,11 @@ export const Settings = () => {
               <button
                 onClick={() => setShowModal(true)}
                 disabled={fetching}
-                className={`w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-white hover:scale-105 active:scale-95 ${fetching
+                className={`w-full sm:w-64 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-semibold text-sm sm:text-base shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-white hover:scale-105 active:scale-95 ${
+                  fetching
                     ? "bg-gray-400 cursor-not-allowed opacity-50"
                     : "bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                  }`}
+                }`}
               >
                 <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
                 <span>{fetching ? "Requesting…" : "Grant Access"}</span>
@@ -124,7 +125,9 @@ export const Settings = () => {
             )}
             {permissionGranted && location && (
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
-                Current: {location?.address || `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`}
+                Current:{" "}
+                {location?.address ||
+                  `${location.latitude.toFixed(2)}, ${location.longitude.toFixed(2)}`}
               </p>
             )}
             {showModal && (
@@ -216,7 +219,9 @@ export const Settings = () => {
             </h2>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Version</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  Version
+                </span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   v{appVersion}
                 </span>

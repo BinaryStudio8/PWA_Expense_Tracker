@@ -74,26 +74,32 @@ export const MonthlyCalendar: React.FC<MonthlyCalendarProps> = ({
       >
         {/* Day number */}
         <div
-          className={`text-xs sm:text-sm font-medium leading-tight ${total > 0 ? "text-black dark:text-white" : "text-gray-900 dark:text-gray-100"
-            }`}
-        > {day}
-
+          className={`text-xs sm:text-sm font-medium leading-tight ${
+            total > 0
+              ? "text-black dark:text-white"
+              : "text-gray-900 dark:text-gray-100"
+          }`}
+        >
+          {" "}
+          {day}
         </div>
         {/* Amount below */}
         {total > 0 && (
-            <div
-              className={`text-[10px] sm:text-xs font-semibold truncate ${opacity > 0.4 ? "text-black dark:text-white" : "text-gray-800 dark:text-gray-200"
-                }`}
-              style={{ maxWidth: "100%" }}
-            >
-              ₹
-              {formatIndianNumber(total, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}
-            </div>
+          <div
+            className={`text-[10px] sm:text-xs font-semibold truncate ${
+              opacity > 0.4
+                ? "text-black dark:text-white"
+                : "text-gray-800 dark:text-gray-200"
+            }`}
+            style={{ maxWidth: "100%" }}
+          >
+            ₹
+            {formatIndianNumber(total, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}
+          </div>
         )}
-
       </div>,
     );
   }

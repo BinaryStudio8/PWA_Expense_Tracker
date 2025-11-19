@@ -10,11 +10,7 @@ import {
   AnalysisExpenseList,
 } from "@/components";
 
-import {
-  TrendingUp,
-  Target,
-  PieChart as PieChartIcon,
-} from "lucide-react";
+import { TrendingUp, Target, PieChart as PieChartIcon } from "lucide-react";
 
 type InsightItem = {
   id: string;
@@ -35,12 +31,12 @@ export const Analysis: React.FC = () => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       }).format(n),
-    []
+    [],
   );
 
   const COLORS = useMemo(
     () => ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"],
-    []
+    [],
   );
 
   /* ---------------- AGGREGATES ---------------- */
@@ -94,8 +90,9 @@ export const Analysis: React.FC = () => {
         title: "Average / Day",
         value: currency(stats.avgPerDay),
         subtitle: aggregated.daysWithSpend
-          ? `${aggregated.daysWithSpend} active ${aggregated.daysWithSpend === 1 ? "day" : "days"
-          }`
+          ? `${aggregated.daysWithSpend} active ${
+              aggregated.daysWithSpend === 1 ? "day" : "days"
+            }`
           : "No activity",
         Icon: TrendingUp,
         accent: "from-emerald-600 to-teal-700",
@@ -125,7 +122,7 @@ export const Analysis: React.FC = () => {
         accent: "from-violet-600 to-purple-700",
       },
     ],
-    [stats, aggregated, currency]
+    [stats, aggregated, currency],
   );
 
   /* ---------------- INSIGHTS ---------------- */
@@ -138,14 +135,11 @@ export const Analysis: React.FC = () => {
         title: "Largest Purchase",
         value: currency(aggregated.highestExpense.amount),
         subtitle:
-          new Date(aggregated.highestExpense.date).toLocaleDateString(
-            "en-IN",
-            {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }
-          ) +
+          new Date(aggregated.highestExpense.date).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }) +
           (aggregated.highestExpense.title
             ? ` • ${aggregated.highestExpense.title}`
             : ""),
@@ -195,7 +189,10 @@ export const Analysis: React.FC = () => {
       </div>
 
       {/* Expense list at bottom */}
-      <AnalysisExpenseList expenses={aggregated.focusExpenses} currency={currency} />
+      <AnalysisExpenseList
+        expenses={aggregated.focusExpenses}
+        currency={currency}
+      />
 
       {/* Empty state */}
       {(!stats.dailyTotals.length || !stats.categoryData.length) && (

@@ -43,9 +43,10 @@ export const DashboardLayout = ({ children }: LayoutProps) => {
                   to={item.to}
                   onClick={closeSidebarOnMobile}
                   className={({ isActive }) =>
-                    `px-4 py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 flex items-center gap-3 ${isActive
-                      ? "bg-linear-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-md"
+                    `px-4 py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 flex items-center gap-3 ${
+                      isActive
+                        ? "bg-linear-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:shadow-md"
                     }`
                   }
                 >

@@ -93,7 +93,8 @@ export const Daily = () => {
                   {formatIndianCurrency(dailyTotals[date])}
                 </div>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mt-1 leading-tight">
-                  Top: <span className="font-medium">{mostExpensive.title}</span> (₹
+                  Top:{" "}
+                  <span className="font-medium">{mostExpensive.title}</span> (₹
                   {formatIndianNumber(Math.abs(mostExpensive.amount))})
                 </p>
               </div>
@@ -116,8 +117,10 @@ export const Daily = () => {
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500" />
-                        <span className="text-gray-800 dark:text-gray-200 
-                                         font-medium text-sm sm:text-base md:text-lg truncate leading-tight min-w-0">
+                        <span
+                          className="text-gray-800 dark:text-gray-200 
+                                         font-medium text-sm sm:text-base md:text-lg truncate leading-tight min-w-0"
+                        >
                           {expense.title}
                         </span>
                       </div>
@@ -132,22 +135,27 @@ export const Daily = () => {
                           ₹{formatIndianCurrency(Math.abs(expense.amount))}
                         </span>
                         <ChevronDown
-                          className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 ${isOpen
-                            ? "rotate-180 text-blue-600"
-                            : "text-gray-400"
-                            }`}
+                          className={`h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 ${
+                            isOpen
+                              ? "rotate-180 text-blue-600"
+                              : "text-gray-400"
+                          }`}
                         />
                       </div>
                     </button>
 
                     {isOpen && (
-                      <div className="pl-4 sm:pl-6 pr-3 sm:pr-4 mt-3 sm:mt-4 space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 
-                                      bg-gray-50 dark:bg-gray-800 rounded-xl p-3 sm:p-4 leading-relaxed">
+                      <div
+                        className="pl-4 sm:pl-6 pr-3 sm:pr-4 mt-3 sm:mt-4 space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 
+                                      bg-gray-50 dark:bg-gray-800 rounded-xl p-3 sm:p-4 leading-relaxed"
+                      >
                         {expense.source === "notification" && (
-                          <div className="flex items-center gap-2 px-3 py-1 
+                          <div
+                            className="flex items-center gap-2 px-3 py-1 
                                           text-blue-800 bg-blue-100 
                                           dark:bg-blue-900 dark:text-blue-200 
-                                          rounded-full w-fit leading-tight">
+                                          rounded-full w-fit leading-tight"
+                          >
                             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                             Notification Auto-detected
                           </div>
@@ -156,30 +164,35 @@ export const Daily = () => {
                         {expense.merchant && (
                           <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 leading-tight">
                             <Store className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="font-medium">Merchant: {expense.merchant}</span>
+                            <span className="font-medium">
+                              Merchant: {expense.merchant}
+                            </span>
                           </div>
                         )}
 
-                        {typeof expense.tags === "object" && expense.tags?.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {expense.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="px-2 sm:px-3 py-1 rounded-full 
+                        {typeof expense.tags === "object" &&
+                          expense.tags?.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {expense.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="px-2 sm:px-3 py-1 rounded-full 
                                             bg-purple-100 dark:bg-purple-800 
                                             text-purple-800 dark:text-purple-200 
                                             font-medium text-xs sm:text-sm leading-tight"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
 
                         {expense.description && (
                           <div className="flex items-start gap-3 leading-tight">
                             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-orange-500 mt-0.5" />
-                            <p className="leading-relaxed text-gray-700 dark:text-gray-300 text-sm">{expense.description}</p>
+                            <p className="leading-relaxed text-gray-700 dark:text-gray-300 text-sm">
+                              {expense.description}
+                            </p>
                           </div>
                         )}
                         {expense.location && (
@@ -198,8 +211,10 @@ export const Daily = () => {
                           </div>
                         )}
 
-                        <div className="text-xs text-gray-500 dark:text-white pt-2 
-                                        border-t border-gray-200 dark:border-gray-600 leading-tight">
+                        <div
+                          className="text-xs text-gray-500 dark:text-white pt-2 
+                                        border-t border-gray-200 dark:border-gray-600 leading-tight"
+                        >
                           Recorded at: {expense.time}
                         </div>
                       </div>

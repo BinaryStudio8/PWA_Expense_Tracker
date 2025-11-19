@@ -1,3 +1,3 @@
 export * from "./number";
 export * from "./notificationClassifier";
-export * from './getPlatform';
+export * from "./getPlatform";

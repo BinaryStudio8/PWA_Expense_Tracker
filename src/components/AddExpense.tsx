@@ -64,7 +64,9 @@ export const AddExpense: React.FC = () => {
           {/* Amount */}
           <div className="space-y-2">
             <InputField
-              icon={<IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-white" />}
+              icon={
+                <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              }
               label="Amount (₹)"
               placeholder="0.00"
               type="number"
@@ -84,8 +86,12 @@ export const AddExpense: React.FC = () => {
             <Tag className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-white" />
             <Listbox value={category} onChange={setCategory}>
               <Listbox.Button className="flex items-center w-full bg-gray-50 dark:bg-gray-700/80 border border-gray-200 dark:border-gray-600 rounded-xl sm:rounded-2xl pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-gray-800 transition-all duration-200">
-                <span className="truncate">{category || "Select a category"}</span>
-                <span className="absolute right-3 sm:right-4 text-gray-500 dark:text-gray-400">▼</span>
+                <span className="truncate">
+                  {category || "Select a category"}
+                </span>
+                <span className="absolute right-3 sm:right-4 text-gray-500 dark:text-gray-400">
+                  ▼
+                </span>
               </Listbox.Button>
               <Transition
                 as={React.Fragment}
@@ -102,14 +108,17 @@ export const AddExpense: React.FC = () => {
                       key={cat}
                       value={cat}
                       className={({ active, selected }) =>
-                        `rounded-sm px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base cursor-pointer transition-colors duration-150 ${active ? "bg-purple-100 dark:bg-gray-900" : ""
+                        `rounded-sm px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base cursor-pointer transition-colors duration-150 ${
+                          active ? "bg-purple-100 dark:bg-gray-900" : ""
                         } ${selected ? "font-semibold text-purple-600 dark:text-white" : ""}`
                       }
                     >
                       {({ selected }) => (
                         <div className="flex justify-between items-center">
                           <span className="truncate">{cat}</span>
-                          {selected && <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />}
+                          {selected && (
+                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+                          )}
                         </div>
                       )}
                     </Listbox.Option>
@@ -137,7 +146,8 @@ export const AddExpense: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl sm:rounded-2xl text-gray-700 dark:text-gray-300">
             <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 shrink-0" />
             <span className="font-medium text-sm sm:text-base">
-              {location.address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
+              {location.address ||
+                `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
             </span>
           </div>
         )}
@@ -153,10 +163,11 @@ export const AddExpense: React.FC = () => {
         <button
           type="submit"
           disabled={!title || !amount}
-          className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base md:text-lg text-white flex items-center justify-center gap-2 sm:gap-3 shadow-xl active:scale-95 transition-all duration-200 ${title && amount
+          className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base md:text-lg text-white flex items-center justify-center gap-2 sm:gap-3 shadow-xl active:scale-95 transition-all duration-200 ${
+            title && amount
               ? "bg-linear-to-r from-blue-800 to-purple-500 hover:from-blue-800 hover:to-purple-700"
               : "bg-gray-400 dark:bg-gray-600 opacity-50 cursor-not-allowed"
-            }`}
+          }`}
         >
           <PlusCircle className="h-5 w-5 sm:h-6 sm:w-6" />
           Add Expense

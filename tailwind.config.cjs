@@ -1,11 +1,7 @@
 module.exports = {
   darkMode: "class",
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
-  safelist: [
-    "animate-moveCloud",
-    "animate-pulseSun",
-    "animate-slideMoon"
-  ],
+  safelist: ["animate-moveCloud", "animate-pulseSun", "animate-slideMoon"],
   theme: {
     extend: {
       animation: {

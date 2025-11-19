@@ -157,15 +157,17 @@ export const Home: React.FC = () => {
         {/* Foreground Content */}
         <div className="relative z-10">
           <h2
-            className={`text-xl sm:text-2xl font-semibold mb-2 ${isEvening ? "text-white" : "text-gray-800"
-              }`}
+            className={`text-xl sm:text-2xl font-semibold mb-2 ${
+              isEvening ? "text-white" : "text-gray-800"
+            }`}
           >
             {greeting}
           </h2>
 
           <p
-            className={`text-base font-semibold sm:text-lg max-w-xl mx-auto ${isEvening ? "text-gray-300" : "text-gray-600"
-              }`}
+            className={`text-base font-semibold sm:text-lg max-w-xl mx-auto ${
+              isEvening ? "text-gray-300" : "text-gray-600"
+            }`}
           >
             Stay on top of your finances — quick, simple, and visual.
           </p>

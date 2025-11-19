@@ -42,7 +42,7 @@ export const useInstallPrompt = () => {
       clearTimeout(timeout);
       window.removeEventListener(
         "beforeinstallprompt",
-        handleBeforeInstallPrompt
+        handleBeforeInstallPrompt,
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
