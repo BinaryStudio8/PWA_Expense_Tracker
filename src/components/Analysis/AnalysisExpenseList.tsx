@@ -1,7 +1,8 @@
+import { Expense } from "@/types";
 import { SearchCheck } from "lucide-react";
 import React from "react";
 
-export const AnalysisExpenseList: React.FC<{ expenses: any[]; currency: (n: number) => string }> =
+export const AnalysisExpenseList: React.FC<{ expenses: Expense[]; currency: (n: number) => string }> =
     React.memo(({ expenses, currency }) => {
         if (!expenses.length) return null;
 

@@ -3,7 +3,12 @@ import { ChartCard } from "@/components";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { formatIndianNumber } from "@/utils/number";
 
-export const LineChartCard: React.FC<{ data: any[] }> = React.memo(({ data }) => (
+type TrendPoint = {
+    day: number;
+    amount: number;
+};
+
+export const LineChartCard: React.FC<{ data: TrendPoint[] }> = React.memo(({ data }) => (
     <ChartCard
         title="Daily Spending Trend"
         className="rounded-2xl p-4 sm:p-6 bg-linear-to-br from-blue-50 to-indigo-50 

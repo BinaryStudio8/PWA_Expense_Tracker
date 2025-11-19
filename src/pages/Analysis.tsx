@@ -11,11 +11,17 @@ import {
 } from "@/components";
 
 import {
-  Wallet2,
   TrendingUp,
   Target,
   PieChart as PieChartIcon,
 } from "lucide-react";
+
+type InsightItem = {
+  id: string;
+  title: string;
+  value: string;
+  subtitle: string;
+};
 
 export const Analysis: React.FC = () => {
   const { stats, monthName, changeMonth } = useMonthlyStats();
@@ -124,7 +130,7 @@ export const Analysis: React.FC = () => {
 
   /* ---------------- INSIGHTS ---------------- */
   const insights = useMemo(() => {
-    const items: any[] = [];
+    const items: InsightItem[] = [];
 
     if (aggregated.highestExpense) {
       items.push({

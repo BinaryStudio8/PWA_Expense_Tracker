@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Github, HeartHandshake, Menu, MenuIcon, MenuSquareIcon, X } from "lucide-react";
+import { Github, HeartHandshake, Menu, X } from "lucide-react";
 import { useDashboardLayout } from "@/hooks";
 import { LayoutProps } from "@/props";
 
@@ -95,7 +95,7 @@ export const DashboardLayout = ({ children }: LayoutProps) => {
             className="md:hidden text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors"
             onClick={toggleSidebar}
           >
-            {sidebarOpen ? <X size={25} /> : <Menu size={24}/>}
+            {sidebarOpen ? <X size={25} /> : <Menu size={24} />}
           </button>
           <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             Dashboard

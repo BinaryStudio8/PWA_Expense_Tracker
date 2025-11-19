@@ -1,6 +1,13 @@
 import React from "react";
 
-export const InsightsColumn: React.FC<{ insights: any[] }> = React.memo(({ insights }) => (
+type Insight = {
+    id: string | number;
+    title: string;
+    subtitle: string;
+    value: string | number;
+};
+
+export const InsightsColumn: React.FC<{ insights: Insight[] }> = React.memo(({ insights }) => (
     <div className="bg-gray-50 dark:bg-gray-900/80 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700 space-y-5">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">💡 Key Insights</h3>
 

@@ -1,8 +1,13 @@
 import React from "react";
 import { PieChart } from "lucide-react";
 
+type CategoryItem = {
+    name: string;
+    value: number;
+};
+
 export const CategoryHighlights: React.FC<{
-    list: any[];
+    list: CategoryItem[];
     total: number;
     currency: (n: number) => string;
 }> = React.memo(({ list, total, currency }) => (

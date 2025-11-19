@@ -2,7 +2,12 @@ import React from "react";
 import { ChartCard } from "@/components";
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
-export const PieChartCard: React.FC<{ data: any[]; colors: string[] }> = React.memo(
+type PieSlice = {
+    name: string;
+    value: number;
+};
+
+export const PieChartCard: React.FC<{ data: PieSlice[]; colors: string[] }> = React.memo(
     ({ data, colors }) => {
         if (!data.length) {
             return (
