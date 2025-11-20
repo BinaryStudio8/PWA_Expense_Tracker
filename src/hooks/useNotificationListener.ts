@@ -1,16 +1,16 @@
 import { Capacitor } from "@capacitor/core";
-import { useEffect, useRef } from "react";
-import { classifyTransaction } from "@/utils";
-import { useExpenseContext } from "@/context";
+import { useEffect } from "react";
 import type { PluginListenerHandle } from "@capacitor/core";
 import { NotificationListener } from "@plugins/capacitor-notification-listener";
 import { NotificationData } from "@/props";
+import {
+  detectSenderWhitelisted,
+  isDuplicate,
+  parseNotification,
+  pushPending,
+} from "@/utils";
 
 export function useNotificationListener() {
-  const { addExpense, expenses } = useExpenseContext();
-  const expenseRef = useRef(expenses);
-  expenseRef.current = expenses;
-
   useEffect(() => {
     if (Capacitor.getPlatform() === "web") return;
 
@@ -18,9 +18,10 @@ export function useNotificationListener() {
 
     async function init() {
       try {
-        await NotificationListener.requestPermission();
+        const permission = await NotificationListener.requestPermission();
+        if (!permission?.granted) return;
       } catch (err) {
-        console.log("Notification listener permission error:", err);
+        console.error("Notification permission error:", err);
         return;
       }
 
@@ -28,40 +29,24 @@ export function useNotificationListener() {
         "notificationReceived",
         (data: NotificationData) => {
           try {
-            const body = data?.text || data?.title || "";
-            if (!body) return;
+            const text = (data?.text ?? data?.title ?? "").trim();
+            if (!text) return;
 
-            const parsed = classifyTransaction(body);
-            if (!parsed) return;
+            const sender = data?.packageName ?? null;
+            if (!detectSenderWhitelisted(sender)) {
+              return;
+            }
 
-            const exists = expenseRef.current.some(
-              (e) => e.hash === parsed.hash,
-            );
-            if (exists) return;
+            const timestamp = data?.postTime ?? Date.now();
+            const parsed = parseNotification(text, sender, timestamp);
 
-            addExpense({
-              title: parsed.party || "Unknown",
-              merchant: parsed.party || null,
-              direction: parsed.direction,
+            if (isDuplicate(parsed.id)) {
+              return;
+            }
 
-              amount:
-                parsed.direction === "credit"
-                  ? -parsed.amount!
-                  : parsed.amount!,
-
-              description: parsed.raw,
-              category: parsed.category,
-              hash: parsed.hash,
-
-              date: new Date().toISOString().split("T")[0],
-              time: new Date().toISOString(),
-
-              confidence: parsed.confidence,
-              tags: parsed.tags,
-              source: "notification",
-            });
+            pushPending(parsed);
           } catch (err) {
-            console.log("Notification parsing error:", err);
+            console.error("Notification parsing error:", err);
           }
         },
       );
@@ -72,9 +57,9 @@ export function useNotificationListener() {
     return () => {
       try {
         handle?.remove();
-      } catch (err) {
-        console.log("Notification listener removal error:", err);
+      } catch {
+        /* noop */
       }
     };
-  }, [addExpense]);
+  }, []);
 }

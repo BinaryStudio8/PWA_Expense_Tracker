@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useDashboardMetrics } from "@/hooks";
-import { ExpenseList, SummaryCard } from "@/components";
+import { ExpenseList, SummaryCard, PendingReviews } from "@/components";
 import { Plus, TrendingUp, IndianRupee } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatIndianCurrency } from "@/utils";
@@ -313,6 +313,10 @@ export const Home: React.FC = () => {
           value={`₹${formatIndianCurrency(maxExpense > 0 ? maxExpense : 0)}`}
           gradient="from-rose-600 to-pink-700"
         />
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        <PendingReviews />
       </div>
 
       {/* Insights Card */}

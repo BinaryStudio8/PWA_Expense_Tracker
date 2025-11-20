@@ -38,7 +38,7 @@ export const Daily = () => {
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-8 space-y-6 sm:space-y-8">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 space-y-6 sm:space-y-8 overflow-hidden">
       {/* Title */}
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
@@ -74,7 +74,7 @@ export const Daily = () => {
             className="rounded-2xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 
                         bg-white dark:bg-gray-900/80
                         shadow-xl hover:shadow-2xl transition-shadow duration-300 
-                        p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6"
+                        p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 overflow-hidden"
           >
             {/* Date Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -113,13 +113,13 @@ export const Daily = () => {
                       onClick={() => toggleExpand(key)}
                       className="flex items-center justify-between w-full text-left p-3 sm:p-4 rounded-xl 
                                  hover:bg-gray-50 dark:hover:bg-gray-800 
-                                 transition-all duration-200 active:scale-95"
+                                 transition-all duration-200 active:scale-95 overflow-hidden"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500" />
                         <span
                           className="text-gray-800 dark:text-gray-200 
-                                         font-medium text-sm sm:text-base md:text-lg truncate leading-tight min-w-0"
+                                         font-medium text-sm sm:text-base md:text-lg truncate leading-tight min-w-0 break-words"
                         >
                           {expense.title}
                         </span>
@@ -147,7 +147,7 @@ export const Daily = () => {
                     {isOpen && (
                       <div
                         className="pl-4 sm:pl-6 pr-3 sm:pr-4 mt-3 sm:mt-4 space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400 
-                                      bg-gray-50 dark:bg-gray-800 rounded-xl p-3 sm:p-4 leading-relaxed"
+                                      bg-gray-50 dark:bg-gray-800 rounded-xl p-3 sm:p-4 leading-relaxed break-words"
                       >
                         {expense.source === "notification" && (
                           <div
@@ -190,7 +190,7 @@ export const Daily = () => {
                         {expense.description && (
                           <div className="flex items-start gap-3 leading-tight">
                             <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-orange-500 mt-0.5" />
-                            <p className="leading-relaxed text-gray-700 dark:text-gray-300 text-sm">
+                            <p className="leading-relaxed text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap break-words">
                               {expense.description}
                             </p>
                           </div>
@@ -202,7 +202,7 @@ export const Daily = () => {
                               href={`https://maps.google.com/?q=${expense.location.latitude},${expense.location.longitude}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-500 font-semibold text-xs dark:text-blue-400 hover:underline leading-tight"
+                              className="text-blue-500 font-semibold text-xs dark:text-blue-400 hover:underline leading-tight break-words"
                             >
                               {expense.location.address ||
                                 `${expense.location.latitude.toFixed(4)}, 

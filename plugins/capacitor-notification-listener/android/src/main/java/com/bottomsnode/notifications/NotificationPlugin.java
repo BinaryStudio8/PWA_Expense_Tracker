@@ -54,7 +54,7 @@ public class NotificationPlugin extends Plugin {
         }
 
         JSObject data = new JSObject();
-        data.put("package", pkg);
+        data.put("packageName", pkg);
         data.put("title", title);
         data.put("text", text);
 

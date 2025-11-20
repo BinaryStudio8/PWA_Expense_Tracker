@@ -7,3 +7,5 @@ export * from "./MonthlyCalendar";
 export * from "./ChartCard";
 export * from "./NotificationListenerWrapper";
 export * from "./Analysis";
+export * from "./DetectedReview";
+export * from "./PendingReviews";

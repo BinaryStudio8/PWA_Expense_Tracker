@@ -1,9 +1,10 @@
 import type { PluginListenerHandle } from "@capacitor/core";
 
 export interface NotificationData {
-  package: string;
+  packageName: string;
   title?: string;
   text?: string;
+  postTime?: number;
 }
 
 export interface NotificationListenerPlugin {
