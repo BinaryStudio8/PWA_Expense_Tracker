@@ -82,7 +82,14 @@ export const DashboardLayout = ({ children }: LayoutProps) => {
         </aside>
       )}
 
-      {/* Mobile overlay - Removed entirely */}
+      {/* Mobile overlay */}
+      {sidebarOpen && isMobile && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={closeSidebarOnMobile}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:w-3/4">

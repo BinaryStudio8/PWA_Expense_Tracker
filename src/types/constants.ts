@@ -8,6 +8,14 @@ export type SmsReceivedEvent = CustomEvent<string>;
 export type Direction = "credit" | "debit" | "unknown";
 export type ScoreMap = Record<string, number>;
 export type DedupRecord = { id: string; createdAt: number };
+export type FilterType = "all" | "active" | "deleted";
+export type ActionType =
+  | "softDelete"
+  | "restore"
+  | "remove"
+  | "purge"
+  | "clear";
+export type ActionState = { type: ActionType; id?: string | null };
 
 export const ThemeContext = createContext<ThemeContextType | null>(null);
 export const ExpenseContext = createContext<ExpenseContextType | null>(null);

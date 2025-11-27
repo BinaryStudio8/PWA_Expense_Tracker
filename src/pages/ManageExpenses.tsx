@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { useExpenseContext } from "@/context/expenseContext";
+import React from "react";
 import { Modal } from "@/base";
 import { formatIndianCurrency } from "@/utils";
 import {
@@ -9,204 +8,39 @@ import {
   ShieldCheck,
   Search,
   Layers,
-  Eye,
-  EyeOff,
 } from "lucide-react";
-
-type FilterType = "all" | "active" | "deleted";
-type ActionType = "softDelete" | "restore" | "remove" | "purge" | "clear";
-
-type ActionState = { type: ActionType; id?: string | null };
+import { useManageExpenses } from "@/hooks/useManageExpenses"; // Adjust path as needed
 
 export const ManageExpenses: React.FC = () => {
   const {
-    expenses,
-    deleteExpense,
-    restoreExpense,
-    removeExpense,
-    clearAll,
-    purgeDeleted,
-  } = useExpenseContext();
-
-  const [filter, setFilter] = useState<FilterType>("all");
-  const [query, setQuery] = useState("");
-  const [pendingAction, setPendingAction] = useState<ActionState | null>(null);
-
-  const stats = useMemo(() => {
-    const activeItems = expenses.filter((expense) => !expense.deleted);
-    const deletedItems = expenses.filter((expense) => expense.deleted);
-    const activeTotal = activeItems.reduce(
-      (sum, expense) => sum + expense.amount,
-      0,
-    );
-    const deletedTotal = deletedItems.reduce(
-      (sum, expense) => sum + expense.amount,
-      0,
-    );
-
-    return {
-      totalCount: expenses.length,
-      activeCount: activeItems.length,
-      deletedCount: deletedItems.length,
-      activeTotal,
-      deletedTotal,
-    };
-  }, [expenses]);
-
-  const sortedExpenses = useMemo(
-    () =>
-      [...expenses].sort((a, b) => {
-        const timeA = new Date(`${a.date} ${a.time}`).getTime();
-        const timeB = new Date(`${b.date} ${b.time}`).getTime();
-        return timeB - timeA;
-      }),
-    [expenses],
-  );
-
-  const filteredExpenses = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return sortedExpenses.filter((expense) => {
-      const matchesFilter =
-        filter === "all"
-          ? true
-          : filter === "active"
-            ? !expense.deleted
-            : expense.deleted;
-      const matchesQuery =
-        normalized.length === 0
-          ? true
-          : [
-              expense.title,
-              expense.description,
-              expense.category,
-              expense.merchant,
-            ]
-              .filter(Boolean)
-              .some((field) => field!.toLowerCase().includes(normalized));
-      return matchesFilter && matchesQuery;
-    });
-  }, [sortedExpenses, filter, query]);
-
-  const openAction = (type: ActionType, id?: string | null) => {
-    setPendingAction({ type, id: id ?? null });
-  };
-
-  const closeAction = () => setPendingAction(null);
-
-  const confirmAction = () => {
-    if (!pendingAction) return;
-    const { type, id } = pendingAction;
-
-    switch (type) {
-      case "softDelete":
-        if (id) deleteExpense(id);
-        break;
-      case "restore":
-        if (id) restoreExpense(id);
-        break;
-      case "remove":
-        if (id) removeExpense(id);
-        break;
-      case "purge":
-        purgeDeleted();
-        break;
-      case "clear":
-        clearAll();
-        break;
-    }
-
-    closeAction();
-  };
-
-  const modalCopy = useMemo(() => {
-    if (!pendingAction) return null;
-
-    switch (pendingAction.type) {
-      case "softDelete":
-        return {
-          title: "Move to Trash?",
-          message:
-            "This expense will be moved to trash. You can restore it later from here.",
-          confirmText: "Move to Trash",
-          type: "warning" as const,
-        };
-      case "restore":
-        return {
-          title: "Restore Expense?",
-          message: "The expense will be restored to your active list.",
-          confirmText: "Restore",
-          type: "success" as const,
-        };
-      case "remove":
-        return {
-          title: "Delete Permanently?",
-          message:
-            "This will permanently remove the expense. This action cannot be undone.",
-          confirmText: "Delete Forever",
-          type: "error" as const,
-        };
-      case "purge":
-        return {
-          title: "Empty Trash?",
-          message:
-            "All trashed expenses will be deleted permanently. This cannot be undone.",
-          confirmText: "Empty Trash",
-          type: "error" as const,
-        };
-      case "clear":
-        return {
-          title: "Clear All Expenses?",
-          message:
-            "Every expense, including the trash, will be removed permanently.",
-          confirmText: "Clear Everything",
-          type: "error" as const,
-        };
-      default:
-        return null;
-    }
-  }, [pendingAction]);
-
-  const filterOptions: {
-    label: string;
-    value: FilterType;
-    count: number;
-    icon: React.ReactNode;
-  }[] = [
-    {
-      label: "All",
-      value: "all",
-      count: stats.totalCount,
-      icon: <Layers className="w-4 h-4" />,
-    },
-    {
-      label: "Active",
-      value: "active",
-      count: stats.activeCount,
-      icon: <Eye className="w-4 h-4" />,
-    },
-    {
-      label: "Trash",
-      value: "deleted",
-      count: stats.deletedCount,
-      icon: <EyeOff className="w-4 h-4" />,
-    },
-  ];
-
-  const hasExpenses = expenses.length > 0;
+    stats,
+    filteredExpenses,
+    filter,
+    setFilter,
+    query,
+    setQuery,
+    pendingAction,
+    openAction,
+    closeAction,
+    confirmAction,
+    modalCopy,
+    hasExpenses,
+    filterOptions,
+  } = useManageExpenses();
 
   return (
     <div className="w-full mx-auto py-8 sm:py-12 px-4 sm:px-6 space-y-8 sm:space-y-10 bg-gray-50 dark:bg-gray-900/1">
       {/* Header Section */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 shadow-lg">
         <div>
-          <p className="text-sm uppercase tracking-widest text-blue-500 font-semibold mb-2 flex items-center gap-2">
+          <p className="text-sm uppercase tracking-widest text-blue-500 font-semibold mb-2 flex items-center gap-2 break-words whitespace-normal min-w-0 max-w-full">
             <Layers className="w-4 h-4" />
             Expense Control Center
           </p>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 break-words whitespace-normal min-w-0 max-w-full">
             Manage Expenses
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 break-words whitespace-normal min-w-0 max-w-full">
             Move entries to trash, restore important ones, or clean up forever —
             you are in full control.
           </p>
@@ -246,31 +80,35 @@ export const ManageExpenses: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow duration-200">
-          <p className="text-sm uppercase opacity-80">Active Amount</p>
-          <p className="text-2xl font-bold mt-2">
+          <p className="text-sm uppercase opacity-80 break-words whitespace-normal min-w-0 max-w-full">
+            Active Amount
+          </p>
+          <p className="text-2xl font-bold mt-2 break-words whitespace-normal min-w-0 max-w-full">
             ₹{formatIndianCurrency(stats.activeTotal)}
           </p>
-          <p className="text-sm opacity-80 mt-1">{stats.activeCount} entries</p>
+          <p className="text-sm opacity-80 mt-1 break-words whitespace-normal min-w-0 max-w-full">
+            {stats.activeCount} entries
+          </p>
         </div>
         <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-5 shadow-lg hover:shadow-xl transition-shadow duration-200">
-          <p className="text-sm uppercase text-gray-500 dark:text-gray-400">
+          <p className="text-sm uppercase text-gray-500 dark:text-gray-400 break-words whitespace-normal min-w-0 max-w-full">
             Trashed Amount
           </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2 break-words whitespace-normal min-w-0 max-w-full">
             ₹{formatIndianCurrency(Math.abs(stats.deletedTotal))}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 break-words whitespace-normal min-w-0 max-w-full">
             {stats.deletedCount} entries
           </p>
         </div>
         <div className="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-5 shadow-lg hover:shadow-xl transition-shadow duration-200">
-          <p className="text-sm uppercase text-gray-500 dark:text-gray-400">
+          <p className="text-sm uppercase text-gray-500 dark:text-gray-400 break-words whitespace-normal min-w-0 max-w-full">
             Total Items
           </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2 break-words whitespace-normal min-w-0 max-w-full">
             {stats.totalCount}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 break-words whitespace-normal min-w-0 max-w-full">
             Combined active & trash
           </p>
         </div>
@@ -300,7 +138,7 @@ export const ManageExpenses: React.FC = () => {
                     filter === option.value
                       ? "text-white/80"
                       : "text-gray-500 dark:text-gray-400"
-                  }`}
+                  } break-words whitespace-normal min-w-0 max-w-full`}
                 >
                   {option.count}
                 </span>
@@ -314,27 +152,29 @@ export const ManageExpenses: React.FC = () => {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by title, merchant, category"
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all break-words whitespace-normal min-w-0 max-w-full"
               aria-label="Search expenses"
             />
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 border-b border-dashed border-gray-200 dark:border-gray-700 pb-3">
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex items-center gap-2 break-words whitespace-normal min-w-0 max-w-full">
             <Filter className="w-3.5 h-3.5" />
             {filteredExpenses.length} results
           </span>
-          <span>Newest first</span>
+          <span className="break-words whitespace-normal min-w-0 max-w-full">
+            Newest first
+          </span>
         </div>
 
         {/* Expense List */}
         {filteredExpenses.length === 0 ? (
           <div className="text-center py-16 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
-            <p className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+            <p className="text-lg font-semibold text-gray-700 dark:text-gray-200 break-words whitespace-normal min-w-0 max-w-full">
               Nothing to show here
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 break-words whitespace-normal min-w-0 max-w-full">
               Try switching filters or clearing the search text.
             </p>
           </div>
@@ -362,40 +202,42 @@ export const ManageExpenses: React.FC = () => {
                       : "bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700"
                   }`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-2 flex-1 min-w-0 overflow-hidden">
+                    {" "}
+                    {/* Added overflow-hidden for safety */}
                     <div className="flex items-center gap-3 flex-wrap">
-                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">
                         {expense.title}
                       </p>
                       {expense.category && (
-                        <span className="text-xs px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300">
+                        <span className="text-xs px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 break-words whitespace-normal min-w-0 max-w-full">
                           {expense.category}
                         </span>
                       )}
                       {isDeleted && (
-                        <span className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300">
+                        <span className="text-xs px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 break-words whitespace-normal min-w-0 max-w-full">
                           In Trash
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 break-words whitespace-normal min-w-0 max-w-full">
                       {dateTime}
                       {expense.merchant ? ` • ${expense.merchant}` : ""}
                     </p>
                     {expense.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 break-words whitespace-normal min-w-0 max-w-full">
                         {expense.description}
                       </p>
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:items-end gap-3 min-w-[200px]">
+                  <div className="flex flex-col sm:items-end gap-3 min-w-0 shrink-0 sm:min-w-[160px]">
                     <span
                       className={`text-xl font-bold ${
                         isCredit
                           ? "text-green-600 dark:text-green-400"
                           : "text-red-600 dark:text-red-400"
-                      }`}
+                      } break-words whitespace-normal min-w-0 max-w-full`}
                     >
                       ₹{formatIndianCurrency(Math.abs(expense.amount))}
                     </span>
