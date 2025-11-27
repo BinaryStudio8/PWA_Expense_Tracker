@@ -9,3 +9,4 @@ export * from "./useMonthlyStats";
 export * from "./useNativeOrWebLocation";
 export * from "./useNotificationListener";
 export * from "./useMonthlyGoal";
+export * from "./useManageExpenses";
