@@ -26,6 +26,6 @@ dist-ssr
 
 android/app/*.keystore
 .vscode
-*.jks
 /coverage
+*.jks
 /.github/old-workflows
