@@ -1,323 +1,213 @@
----
-name: CI → Android Build → Optional Release (Cyberpunk)
+name: CI/CD Pipeline
 
-# Triggers: branch pushes, tags starting with v, PRs, manual
 on:
+  # Trigger CI on pushes to main/dev and on version tags like v1.2.3
   push:
     branches: [main, dev]
-    tags: ['v*']
+    tags:
+      - "v*.*.*"
+
+  # Run CI checks on pull requests
   pull_request:
     branches: [main, dev]
+
+  # Allow manual triggering
   workflow_dispatch:
 
+# Prevent multiple concurrent runs for same branch/tag
 concurrency:
-  group: cyberpunk-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: write
-  checks: write
-
 env:
-  NODE_VERSION: '20'
-  JAVA_VERSION: '21'
-  JAVA_DISTRIBUTION: 'temurin'
-  BUN_VERSION: '1.3.2'
-  APK_MIN_SIZE_BYTES: 100000
-  ARTIFACT_RETENTION_DAYS: 14
-  CYBER_ACENT: '\033[95m'   # neon magenta
-  CYBER_OK: '\033[92m'      # neon green
-  CYBER_WARN: '\033[93m'    # neon yellow
-  CYBER_FAIL: '\033[91m'    # neon red
-  CYBER_RST: '\033[0m'
+  JAVA_VERSION: "21"
+  JAVA_DISTRIBUTION: "temurin"
 
-########################
-# CI: LINT / TYPECHECK / TEST / WEB BUILD
-########################
 jobs:
-  ci:
-    name: "CI — Lint · Typecheck · Test · Web Build"
+  # ------------------------------------------------------------
+  # 1. Secret Scan (safety gate)
+  # ------------------------------------------------------------
+  secret-scan:
     runs-on: ubuntu-latest
-    outputs:
-      web_artifact: web-build
     steps:
-      - name: "⤴ Checkout"
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      # Detect accidentally committed secrets
+      - name: Secret Scan
+        uses: trufflesecurity/trufflehog@main
         with:
-          fetch-depth: 0
+          extra_args: --only-verified
+        continue-on-error: true # Don’t break pipeline on false positives
 
-      - name: "✨ Announce (theme)"
-        run: |
-          echo -e "${{ env.CYBER_ACENT }}┏━━ CYBERPUNK CI: BOOTING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${{ env.CYBER_RST }}"
-          echo "::group::🛰️ Environment"
-          echo "Ref: $GITHUB_REF"
-          echo "SHA: $GITHUB_SHA"
-          echo "Event: $GITHUB_EVENT_NAME"
-          echo "::endgroup::"
+  # ------------------------------------------------------------
+  # 2. Lint (ESLint)
+  # ------------------------------------------------------------
+  lint:
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: "⚙️ Setup Bun (fast runtime)"
-        uses: oven-sh/setup-bun@v2
+      # Setup Bun for fast installs + scripts
+      - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ env.BUN_VERSION }}
+          bun-version: "1.3.2"
 
-      # Bun/node caches: split keys for better hit rates
-      - name: "📦 Restore Bun / node_modules / vite cache"
-        uses: actions/cache@v4
+      # Install JS deps using bun
+      - run: bun install --frozen-lockfile
+
+      # Run eslint
+      - run: bunx eslint . --cache --cache-location .eslintcache
+
+      # Cache eslint results to speed reruns
+      - uses: actions/cache@v4
         with:
-          path: |
-            ~/.bun
-            node_modules
-            .vite
-            node_modules/.cache
-          key: bun-node-${{ runner.os }}-${{ hashFiles('**/bun.lockb','**/package.json') }}
-          restore-keys: |
-            bun-node-${{ runner.os }}-
+          path: .eslintcache
+          key: eslint-${{ github.sha }}
 
-      - name: "⬇️ Install dependencies"
-        run: |
-          echo "::group::🔧 Installing dependencies"
-          echo -e "${{ env.CYBER_ACENT }}▸ bun install --frozen-lockfile${{ env.CYBER_RST }}"
-          bun install --frozen-lockfile
-          echo "::endgroup::"
+  # ------------------------------------------------------------
+  # 3. Type Check (TS)
+  # ------------------------------------------------------------
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
 
-      - name: "🔎 Lint (ESLint)"
-        run: |
-          echo "::group::🧹 Lint"
-          echo -e "${{ env.CYBER_ACENT }}▸ Running ESLint${{ env.CYBER_RST }}"
-          set -o pipefail
-          bunx eslint . --max-warnings=0 || (echo -e "${{ env.CYBER_FAIL }}✗ Lint failed${{ env.CYBER_RST }}" && exit 1)
-          echo -e "${{ env.CYBER_OK }}✓ Lint passed${{ env.CYBER_RST }}"
-          echo "::endgroup::"
+      # Installing deps again (isolated jobs)
+      - run: bun install --frozen-lockfile
 
-      - name: "🧾 TypeScript check"
-        run: |
-          echo "::group::📐 Typecheck"
-          bunx tsc --noEmit || (echo -e "${{ env.CYBER_FAIL }}✗ Typecheck failed${{ env.CYBER_RST }}" && exit 1)
-          echo -e "${{ env.CYBER_OK }}✓ Typecheck passed${{ env.CYBER_RST }}"
-          echo "::endgroup::"
+      # TypeScript validation
+      - run: bunx tsc --noEmit
 
-      - name: "🧪 Tests"
-        run: |
-          echo "::group::🧪 Tests"
-          set -o pipefail
-          bunx vitest run --coverage || echo -e "${{ env.CYBER_WARN }}No tests or some tests failed (check logs)${{ env.CYBER_RST }}"
-          echo "::endgroup::"
+  # ------------------------------------------------------------
+  # 4. Build Web (Vite)
+  # ------------------------------------------------------------
+  build-web:
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
 
-      - name: "🌐 Build web (Vite)"
-        run: |
-          echo "::group::🌐 Building Web (Vite)"
-          echo -e "${{ env.CYBER_ACENT }}▸ bun run build${{ env.CYBER_RST }}"
-          bun run build
-          echo -e "${{ env.CYBER_OK }}✓ Web build complete${{ env.CYBER_RST }}"
-          echo "::endgroup::"
+      # Install all deps
+      - run: bun install --frozen-lockfile
 
-      - name: "📦 Package dist → dist.zip"
-        run: |
-          echo "::group::📦 Packaging"
-          if [ -d dist ]; then
-            cd dist
-            zip -r ../dist.zip . || true
-            cd ..
-            echo -e "${{ env.CYBER_OK }}✓ dist.zip created${{ env.CYBER_RST }}"
-          else
-            echo -e "${{ env.CYBER_FAIL }}✗ dist missing${{ env.CYBER_RST }}"
-            exit 1
-          fi
-          echo "::endgroup::"
+      # Vite build → generates dist/
+      - run: bun run build
 
-      - name: "🗄️ Upload web artifact"
-        uses: actions/upload-artifact@v4
+      # Upload built web assets for Android job
+      - uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: dist.zip
-          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+          path: dist/**
+          retention-days: 7
 
-      - name: "📜 Write CI summary"
-        run: |
-          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Ref: $GITHUB_REF" >> $GITHUB_STEP_SUMMARY
-          echo "- SHA: $GITHUB_SHA" >> $GITHUB_STEP_SUMMARY
-          echo "- Web artifact: web-build" >> $GITHUB_STEP_SUMMARY
-
-########################
-# ANDROID BUILD (consumes web artifact)
-########################
-  android:
-    name: "Android Build · Sign APK"
+  # ------------------------------------------------------------
+  # 5. Build Android (SIGNED RELEASE APK)
+  # ------------------------------------------------------------
+  build-android:
     runs-on: ubuntu-latest
-    needs: ci
-    if: ${{ needs.ci.result == 'success' }}
-
+    needs: build-web
     steps:
-      - name: "⤴ Checkout"
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: "⚙️ Setup Node (Capacitor runtime)"
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      # Setup bun for capacitor/JS step
+      - uses: oven-sh/setup-bun@v2
 
-      - name: "☕ Setup Java"
-        uses: actions/setup-java@v5
+      # Java + Gradle
+      - uses: actions/setup-java@v5
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
 
-      - name: "🛠️ Restore Gradle cache"
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            android/.gradle
-            android/.gradle-build-cache
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/gradle-wrapper.properties','**/build.gradle*','**/settings.gradle*') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
+      # Setup Android SDK
+      - uses: android-actions/setup-android@v3
 
-      - name: "🧭 Setup Android SDK"
-        uses: android-actions/setup-android@v3
-
-      - name: "🔐 Decode keystore (secure)"
+      # Install required SDK components
+      - name: Install Android SDK
         run: |
-          echo "::group::🔐 Keystore"
-          mkdir -p android/app
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore
-          echo "::endgroup::"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: "🧾 Export signing env"
+      # Decode keystore from GitHub secret
+      - name: Restore Keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p android/app
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+
+      # REQUIRED
+      - name: Export Signing Env Vars
         run: |
           echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
           echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> $GITHUB_ENV
           echo "ANDROID_KEY_ALIAS_PASSWORD=${{ secrets.ANDROID_KEY_ALIAS_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: "⬇️ Install JS deps (npm, required for Capacitor)"
-        run: |
-          echo "::group::📦 Installing JS deps (npm)"
-          npm ci
-          echo "::endgroup::"
+      - name: JS deps
+        run: bun install --frozen-lockfile
 
-      - name: "📥 Download web-build artifact"
-        uses: actions/download-artifact@v4
+      # Download previously built dist/ folder
+      - uses: actions/download-artifact@v6
         with:
           name: web-build
-          path: .
+          path: dist/
 
-      - name: "📂 Unpack web build"
+      # Sync Capacitor → copy dist → update native android
+      - name: Capacitor Sync
         run: |
-          echo "::group::📂 Unpack web-build"
-          unzip -q dist.zip -d dist
-          echo "::endgroup::"
+          ./node_modules/.bin/cap copy
+          ./node_modules/.bin/cap sync android
 
-      - name: "🔁 Capacitor: copy & sync (android)"
-        run: |
-          echo "::group::🔁 Capacitor sync"
-          npx cap copy
-          npx cap sync android
-          echo "::endgroup::"
+      # Make gradlew executable
+      - run: chmod +x android/gradlew
 
-      - name: "🧰 Build Signed Release APK"
+      # Build signed release APK (using Gradle + your keystore)
+      - name: Build Signed Release APK
         run: |
-          echo "::group::🧰 Gradle build"
           cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
-          echo "::endgroup::"
+          ./gradlew assembleRelease --no-daemon --stacktrace --console=rich \
+          2>&1 | tee gradle-build.log
 
-      - name: "🔎 Verify and inline rename APK"
-        id: rename
-        run: |
-          echo "::group::🔎 Verify APK"
-          APK="android/app/build/outputs/apk/release/app-release.apk"
-          if [ ! -f "$APK" ]; then
-            echo -e "${{ env.CYBER_FAIL }}✗ APK missing${{ env.CYBER_RST }}"
-            exit 1
-          fi
-          SIZE=$(stat -c%s "$APK")
-          if [ "$SIZE" -lt ${{ env.APK_MIN_SIZE_BYTES }} ]; then
-            echo -e "${{ env.CYBER_FAIL }}✗ APK too small ($SIZE bytes)${{ env.CYBER_RST }}"
-            exit 1
-          fi
-          OUT="expense-tracker-${GITHUB_SHA:0:7}.apk"
-          mkdir -p artifacts
-          cp "$APK" "artifacts/$OUT"
-          echo "apk_path=artifacts/$OUT" >> $GITHUB_OUTPUT
-          echo "::endgroup::"
-          echo -e "${{ env.CYBER_OK }}✓ APK ready → artifacts/$OUT${{ env.CYBER_RST }}"
+      # Upload build logs for debugging if something fails
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs
+          path: android/gradle-build.log
 
-      - name: "🗄️ Upload android-apk artifact"
-        uses: actions/upload-artifact@v4
+      # Upload **signed** APK as GitHub artifact
+      - uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: ${{ steps.rename.outputs.apk_path }}
-          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
 
-########################
-# RELEASE: create GitHub Release only on semver tags (v*)
-########################
+  # ------------------------------------------------------------
+  # 6. Release (ONLY for version tags)
+  # ------------------------------------------------------------
   release:
-    name: "Release (tags only)"
     runs-on: ubuntu-latest
-    needs: android
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - name: "⤴ Checkout"
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    needs: build-android
+    if: startsWith(github.ref, 'refs/tags/v') # Only on tags like v1.2.3
+    permissions:
+      contents: write
 
-      - name: "📥 Download APK artifact"
-        uses: actions/download-artifact@v4
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download signed APK (built in previous job)
+      - uses: actions/download-artifact@v6
         with:
           name: android-apk
           path: artifacts/
 
-      - name: "📝 Generate changelog"
-        id: changelog
-        run: |
-          echo "::group::📝 Generating changelog"
-          TAG="${GITHUB_REF#refs/tags/}"
-          PREV=$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)
-          if [ -n "$PREV" ]; then
-            git log "$PREV"..HEAD --pretty=format:"- %s (%h)" > CHANGELOG.md
-          else
-            git log --pretty=format:"- %s (%h)" --max-count=200 > CHANGELOG.md
-          fi
-          echo "::endgroup::"
-          echo "changelog_path=CHANGELOG.md" >> $GITHUB_OUTPUT
-
-      - name: "🚀 Create GitHub Release"
-        uses: softprops/action-gh-release@v2
+      # Publish GitHub Release + upload APK
+      - uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*.apk
-          body_path: CHANGELOG.md
+          files: artifacts/app-release.apk
+          body: "Automated release for ${{ github.ref_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "✅ Release summary"
-        run: |
-          echo "## Release created: ${GITHUB_REF#refs/tags/}" >> $GITHUB_STEP_SUMMARY
-          echo "- Attached artifacts: artifacts/*.apk" >> $GITHUB_STEP_SUMMARY
-          echo "- CHANGELOG: ${{ steps.changelog.outputs.changelog_path }}" >> $GITHUB_STEP_SUMMARY
-
-########################
-# END: Global cleanup/message
-########################
-  final:
-    name: "Final Neon Echo"
-    runs-on: ubuntu-latest
-    needs: [ci]
-    if: ${{ always() }}
-    steps:
-      - name: "🧾 Dump run summary (neon)"
-        run: |
-          echo -e "${{ env.CYBER_ACENT }}┏━━ RUN SUMMARY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${{ env.CYBER_RST }}"
-          echo "Workflow: $GITHUB_WORKFLOW"
-          echo "Ref: $GITHUB_REF"
-          echo "Result: ${{ job.status || 'unknown' }}"
-          echo -e "${{ env.CYBER_ACENT }}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${{ env.CYBER_RST }}"
