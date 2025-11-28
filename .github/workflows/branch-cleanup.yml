@@ -26,9 +26,6 @@ permissions:
 env:
   FORCE_COLOR: "1"
 
-env:
-  FORCE_COLOR: "1"
-
 jobs:
   cleanup:
     name: Delete merged & stale branches (safe)
