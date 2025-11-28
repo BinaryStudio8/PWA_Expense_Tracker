@@ -66,24 +66,17 @@ jobs:
 
           bun audit --json > audit-results.json || true
 
-          TOTAL=$(grep -o '"severity":"' audit-results.json | wc -l || echo 0)
-
-          CRITICAL=$(grep -c '"severity":"critical"' audit-results.json || echo 0)
-          HIGH=$(grep -c '"severity":"high"' audit-results.json || echo 0)
-          MODERATE=$(grep -c '"severity":"moderate"' audit-results.json || echo 0)
-          LOW=$(grep -c '"severity":"low"' audit-results.json || echo 0)
+          TOTAL=$(grep -o '"severity":"' audit-results.json 2>/dev/null | wc -l | tr -d ' ' || echo 0)
+          CRITICAL=$(grep -c '"severity":"critical"' audit-results.json 2>/dev/null | tr -d ' ' || echo 0)
+          HIGH=$(grep -c '"severity":"high"' audit-results.json 2>/dev/null | tr -d ' ' || echo 0)
+          MODERATE=$(grep -c '"severity":"moderate"' audit-results.json 2>/dev/null | tr -d ' ' || echo 0)
+          LOW=$(grep -c '"severity":"low"' audit-results.json 2>/dev/null | tr -d ' ' || echo 0)
 
           echo "total_vulns=$TOTAL" >> $GITHUB_OUTPUT
           echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
           echo "high=$HIGH" >> $GITHUB_OUTPUT
           echo "moderate=$MODERATE" >> $GITHUB_OUTPUT
           echo "low=$LOW" >> $GITHUB_OUTPUT
-
-          echo -e "${CYAN}Vulnerabilities detected:${RESET}"
-          echo -e "  • Critical:   $CRITICAL"
-          echo -e "  • High:       $HIGH"
-          echo -e "  • Moderate:   $MODERATE"
-          echo -e "  • Low:        $LOW"
 
       - name: Decide if workflow should fail
         id: decision
