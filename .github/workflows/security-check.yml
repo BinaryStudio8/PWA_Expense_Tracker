@@ -2,7 +2,7 @@ name: Daily Security Check
 
 on:
   schedule:
-    - cron: "0 9 * * *" # daily at 9 AM UTC
+    - cron: "0 9 * * *"
   workflow_dispatch:
     inputs:
       min_severity:
@@ -37,73 +37,69 @@ jobs:
       - name: Read workflow inputs
         id: inputs
         run: |
-          echo "severity=${{ github.event.inputs.min_severity || env.DEFAULT_SEVERITY }}" >> $GITHUB_OUTPUT
-          echo "dry_run=${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_OUTPUT
+          CYAN="\033[36m"
+          RESET="\033[0m"
+
+          echo -e "${CYAN}Reading workflow input values...${RESET}"
+
+          SEV="${{ github.event.inputs.min_severity }}"
+          DRY="${{ github.event.inputs.dry_run }}"
+
+          if [ -z "$SEV" ]; then SEV="${DEFAULT_SEVERITY}"; fi
+          if [ -z "$DRY" ]; then DRY="false"; fi
+
+          echo "severity=$SEV" >> $GITHUB_OUTPUT
+          echo "dry_run=$DRY" >> $GITHUB_OUTPUT
+
+          echo -e "• Severity threshold: ${CYAN}$SEV${RESET}"
+          echo -e "• Dry run mode: ${CYAN}$DRY${RESET}"
 
       - name: Run Bun audit (JSON mode)
         id: audit
         continue-on-error: true
         run: |
-          echo "Running security audit..."
+          MAGENTA="\033[35m"
+          CYAN="\033[36m"
+          RESET="\033[0m"
+
+          echo -e "${MAGENTA}Running Bun security audit...${RESET}"
+
           bun audit --json > audit-results.json || true
 
-          # Extract vulnerability counts from JSON
           TOTAL=$(grep -o '"severity":"' audit-results.json | wc -l || echo 0)
-          echo "total_vulns=$TOTAL" >> $GITHUB_OUTPUT
 
-          # pre-classify by severity using grep
           CRITICAL=$(grep -c '"severity":"critical"' audit-results.json || echo 0)
           HIGH=$(grep -c '"severity":"high"' audit-results.json || echo 0)
           MODERATE=$(grep -c '"severity":"moderate"' audit-results.json || echo 0)
           LOW=$(grep -c '"severity":"low"' audit-results.json || echo 0)
 
+          echo "total_vulns=$TOTAL" >> $GITHUB_OUTPUT
           echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
           echo "high=$HIGH" >> $GITHUB_OUTPUT
           echo "moderate=$MODERATE" >> $GITHUB_OUTPUT
           echo "low=$LOW" >> $GITHUB_OUTPUT
 
-          if [ "$TOTAL" -gt 0 ]; then
-            echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
-          else
-            echo "vulnerabilities_found=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate human-readable summary
-        run: |
-          SEV="${{ steps.inputs.outputs.severity }}"
-          echo "## Security Audit Summary — $(date -u +"%Y-%m-%d %H:%M UTC")" > audit-summary.md
-          echo "" >> audit-summary.md
-          echo "**Minimum severity threshold:** \`$SEV\`" >> audit-summary.md
-          echo "" >> audit-summary.md
-          echo "**Detected vulnerabilities:**" >> audit-summary.md
-          echo "- Critical: ${{ steps.audit.outputs.critical }}" >> audit-summary.md
-          echo "- High: ${{ steps.audit.outputs.high }}" >> audit-summary.md
-          echo "- Moderate: ${{ steps.audit.outputs.moderate }}" >> audit-summary.md
-          echo "- Low: ${{ steps.audit.outputs.low }}" >> audit-summary.md
-          echo "" >> audit-summary.md
-          echo "### Full Audit Output" >> audit-summary.md
-          bun audit >> audit-summary.md 2>&1 || true
-
-      - name: Upload audit logs (artifact)
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: security-audit-${{ github.run_id }}
-          path: |
-            audit-results.json
-            audit-summary.md
-          retention-days: 30
+          echo -e "${CYAN}Vulnerabilities detected:${RESET}"
+          echo -e "  • Critical:   $CRITICAL"
+          echo -e "  • High:       $HIGH"
+          echo -e "  • Moderate:   $MODERATE"
+          echo -e "  • Low:        $LOW"
 
       - name: Decide if workflow should fail
         id: decision
         run: |
+          RED="\033[31m"
+          GREEN="\033[32m"
+          YELLOW="\033[33m"
+          CYAN="\033[36m"
+          RESET="\033[0m"
+
           SEV="${{ steps.inputs.outputs.severity }}"
           DRY="${{ steps.inputs.outputs.dry_run }}"
-          
+
           CRITICAL=${{ steps.audit.outputs.critical }}
           HIGH=${{ steps.audit.outputs.high }}
           MODERATE=${{ steps.audit.outputs.moderate }}
-          LOW=${{ steps.audit.outputs.low }}
 
           FAIL=false
 
@@ -120,15 +116,18 @@ jobs:
             low)
               [ "${{ steps.audit.outputs.total_vulns }}" -gt 0 ] && FAIL=true
               ;;
-            *)
-              FAIL=false
-              ;;
           esac
 
           echo "should_fail=$FAIL" >> $GITHUB_OUTPUT
 
+          if [ "$FAIL" = true ]; then
+            echo -e "${RED}❌ Vulnerabilities exceed threshold${RESET}"
+          else
+            echo -e "${GREEN}✔ Within acceptable security limits${RESET}"
+          fi
+
           if [ "$DRY" = "true" ]; then
-            echo "[DRY RUN] Would have failed = $FAIL"
+            echo -e "${YELLOW}[DRY RUN] Ignoring failure result${RESET}"
             echo "should_fail=false" >> $GITHUB_OUTPUT
           fi
 
@@ -141,7 +140,8 @@ jobs:
             const summary = fs.readFileSync('audit-summary.md', 'utf8');
             const repo = context.repo;
 
-            // Find existing issues with label
+            console.log("\x1b[33mChecking for existing security issues...\x1b[0m");
+
             const issues = await github.rest.issues.listForRepo({
               owner: repo.owner,
               repo: repo.repo,
@@ -149,9 +149,12 @@ jobs:
               labels: 'security,dependencies'
             });
 
-            const existing = issues.data.find(i => i.title.includes('Security vulnerabilities detected'));
+            const existing = issues.data.find(issue =>
+              issue.title.includes('Security vulnerabilities detected')
+            );
 
             if (existing) {
+              console.log("\x1b[36mUpdating existing security issue...\x1b[0m");
               await github.rest.issues.createComment({
                 owner: repo.owner,
                 repo: repo.repo,
@@ -159,6 +162,7 @@ jobs:
                 body: `### New Audit (${new Date().toISOString()})\n\n${summary}`
               });
             } else {
+              console.log("\x1b[35mCreating new security issue...\x1b[0m");
               await github.rest.issues.create({
                 owner: repo.owner,
                 repo: repo.repo,
@@ -171,14 +175,17 @@ jobs:
       - name: Fail workflow if vulnerabilities exceed threshold
         if: steps.decision.outputs.should_fail == 'true'
         run: |
-          echo "::error::Security vulnerabilities exceed threshold. Check created issue."
+          RED="\033[31m"
+          RESET="\033[0m"
+          echo -e "${RED}❌ Security vulnerabilities exceed threshold. Check created issue.${RESET}"
           exit 1
 
       - name: Final Summary (Success)
         if: steps.decision.outputs.should_fail == 'false'
         run: |
-          echo "## Security Check" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✔ No actionable vulnerabilities detected." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "See uploaded artifact for full results." >> $GITHUB_STEP_SUMMARY
+          GREEN="\033[32m"
+          CYAN="\033[36m"
+          RESET="\033[0m"
+
+          echo -e "${GREEN}✔ No actionable vulnerabilities detected.${RESET}"
+          echo -e "${CYAN}See uploaded artifact for full results.${RESET}" >> $GITHUB_STEP_SUMMARY
