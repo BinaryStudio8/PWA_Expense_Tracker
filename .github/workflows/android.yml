@@ -29,14 +29,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure originating run is same repo
-        run: |
-          ORIGIN="${{ github.event.workflow_run.head_repo.full_name || '' }}"
-          if [ "$ORIGIN" != "${{ github.repository }}" ]; then
-            echo "Origin mismatch ($ORIGIN) — skipping android build."
-            exit 78
-          fi
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
