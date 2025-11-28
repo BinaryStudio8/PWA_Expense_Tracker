@@ -28,3 +28,4 @@ dist-ssr
 
 android/app/*.keystore
 *.jks
+/.github/old-workflows
