@@ -28,3 +28,4 @@ android/app/*.keystore
 .vscode
 *.jks
 /coverage
+/.github/old-workflows
