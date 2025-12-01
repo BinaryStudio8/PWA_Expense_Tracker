@@ -1,4 +1,5 @@
-version: 2
+version: 3
+
 updates:
   - package-ecosystem: "npm"
     directory: "/"
@@ -18,20 +19,44 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    automerge: true
+    automerge-type: "pr"
     groups:
       react:
-        patterns: ["react*", "@types/react*"]
-      capacitor:
-        patterns: ["@capacitor/*"]
-      build-tools:
-        patterns: ["vite*", "rollup*", "esbuild*"]
-      linting:
-        patterns: ["eslint*", "prettier*", "@typescript-eslint/*"]
+        patterns:
+          - "react*"
+          - "@types/react*"
 
+      capacitor:
+        patterns:
+          - "@capacitor/*"
+
+      build-tools:
+        patterns:
+          - "vite*"
+          - "rollup*"
+          - "esbuild*"
+          - "@swc/*"
+
+      linting:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "@typescript-eslint/*"
+
+      type-defs:
+        patterns:
+          - "@types/*"
+
+      bun:
+        patterns:
+          - "bun-*"
+          - "@bun*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    labels: ["dependencies", "ci"]
 
   - package-ecosystem: "gradle"
     directory: "/android"
@@ -42,3 +67,4 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.jetbrains.kotlin:*"
         update-types: ["version-update:semver-major"]
+    labels: ["dependencies", "android"]
