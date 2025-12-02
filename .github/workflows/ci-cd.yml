@@ -274,43 +274,79 @@ jobs:
           echo "::endgroup::"
 
       - name: "🔧 Make gradlew executable"
-        run: chmod +x android/gradlew
-
-      - name: "🏗️ Building signed release APK..."
         run: |
-          echo "::group::Gradle build"
+          chmod +x android/gradlew
+          ls -la android/
+
+      - name: "🔍 Pre-build debug (list key files)"
+        run: |
+          echo "PWD: $(pwd)"
+          echo "Showing android dir:"
+          ls -la android || true
+          echo "Showing build.gradle files:"
+          find android -maxdepth 2 -type f -name "build.gradle*" -print || true
+          echo "Gradle wrapper jar:"
+          ls -la android/gradle/wrapper || true
+
+      - name: "⚙️ Gradle version (wrapper)"
+        run: |
+          ./android/gradlew --version
+
+      - name: "🏗️ Building signed release APK (full logs)"
+        run: |
+          set -o pipefail
           cd android
           echo "Starting Android build process..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          ./gradlew assembleRelease --no-daemon --stacktrace --console=rich \
-          2>&1 | tee gradle-build.log
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "::endgroup::"
-
-      - name: "📊 APK info"
-        run: |
-          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
-          if [ -f "$APK_PATH" ]; then
-            APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
-            echo "::notice::APK built successfully - Size: $APK_SIZE"
+          ./gradlew assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../gradle-build.log
+          BUILD_EXIT=${PIPESTATUS[0]}
+          echo "Gradle exit code: $BUILD_EXIT"
+          if [ "$BUILD_EXIT" -ne 0 ]; then
+            echo "::error::Gradle build failed. See gradle-build.log"
+            exit $BUILD_EXIT
           fi
+
+      - name: "🔍 Debug APK output directory"
+        run: |
+          echo "Listing outputs recursively:"
+          ls -R android/app/build/outputs || true
+          echo "Look for APK files:"
+          find android/app/build/outputs -type f -name "*.apk" -print || true
+          echo "List artifact dir root:"
+          ls -la android/app/build/outputs/apk/release || true
+
+      - name: "📊 APK info (if present)"
+        run: |
+          set -e
+          APK_PATTERN="android/app/build/outputs/apk/release/*.apk"
+          echo "Pattern: $APK_PATTERN"
+          shopt -s nullglob
+          files=($APK_PATTERN)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No APK files found in release dir."
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            echo "Found APK: $f"
+            du -h "$f"
+          done
 
       - name: "📤 Upload build logs"
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gradle-logs
-          path: android/gradle-build.log
+          path: gradle-build.log
 
-      - name: "📤 Upload signed APK"
+      - name: "📤 Upload APK(s) (signed or unsigned)"
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: "✅ Android build complete"
-        run: echo "::notice::Signed APK ready for release"
+        run: echo "::notice::Android build job finished (check uploaded artifacts and gradle logs)"
 
   # ------------------------------------------------------------
   # 6. Release (ONLY for version tags) 🚀
