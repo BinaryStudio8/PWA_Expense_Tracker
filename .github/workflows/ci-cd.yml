@@ -337,23 +337,39 @@ jobs:
           APK_SIZE=$(du -h artifacts/app-release.apk | cut -f1)
           echo "APK Size: $APK_SIZE"
 
+      # ------------------------------
+      # Install git-cliff
+      # ------------------------------
+      - name: "📥 Install git-cliff"
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest \
+            | jq -r '.assets[] | select(.name | test("x86_64-unknown-linux-musl.tar.gz$")) | .browser_download_url')
+
+          echo "Downloading git-cliff: $LATEST"
+          curl -sSL "$LATEST" -o git-cliff.tar.gz
+
+          tar -xzf git-cliff.tar.gz
+          sudo mv git-cliff*/git-cliff /usr/local/bin/git-cliff
+
+      # ------------------------------
+      # Generate Changelog
+      # ------------------------------
+      - name: "📝 Generate changelog"
+        run: |
+          git-cliff --tag ${GITHUB_REF#refs/tags/} > RELEASE_CHANGELOG.md
+          echo "Generated changelog:"
+          cat RELEASE_CHANGELOG.md
+
+      # ------------------------------
+      # Publish GitHub Release
+      # ------------------------------
       - name: "🚀 Publish GitHub Release"
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/app-release.apk
-          body: |
-            ## 🎉 Release ${{ github.ref_name }}
-            
-            Automated release built and signed via CI/CD pipeline.
-            
-            ### 📦 Assets
-            - **app-release.apk** - Signed Android APK
-            
-            ### 🔗 Quick Links
-            - [Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            - [Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          body_path: RELEASE_CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "✅ Release published"
-        run: echo "::notice::Release ${{ github.ref_name }} published successfully! 🎉"
+        run: echo "::notice::Release ${{ github.ref_name }} published successfully!"
